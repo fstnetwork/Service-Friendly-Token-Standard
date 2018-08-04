@@ -1,6 +1,6 @@
 ---
 eip: <to be assigned>
-title: Service-Friendly代幣Standard
+title: Service-Friendly Token Standard
 author: Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930)
 discussions-to: <URL>
 status: Draft
@@ -26,7 +26,7 @@ requires: ERC-20
 
 原本專注於群眾募資的代幣技術與市場，遭遇到了即將要轉形成實用型 (Utility Token) 的陣痛期，非常多的專案或企業遇到了代幣的智能合約功能不足的問題，難以支撐基本的商業模式並應用於更多現實世界的服務或產品。
 
-以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 上常會需要的基本功能，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native 代幣 environment)，即對於代幣運作是有善的環境。
+以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 上常會需要的基本功能，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是有善的環境。
 
 以及 FundersToken 原創的代幣傳輸轉發 (Token transfer relay)，即使用智能合約模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
 
@@ -73,7 +73,7 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 
 簡單來說，我們希望代幣的金流或業務流程可以像是以太坊原本的方式一樣自然，並且讓代幣相關的服務開發起來是簡單直覺的，而非受了太多 ERC-20 沒有解決到的阻礙，造成業務擴展受到影響。
 
-為了達成這些目的，我們針對 ERC-223 或 ERC-827 的 `transferAndCall` 的實做方法與潛在威脅進行了優化與增強，其中，讓 `receiverContract` 也就是服務智能合約 (Service contract) 收到正確的代幣傳輸數字 (Value) 與正確的代幣傳送者 (Transfer sender)，讓 `receiverContract` 不會攻擊代幣代幣傳送者，詳細會在下面補充。
+為了達成這些目的，我們針對 ERC-223 或 ERC-827 的 `transferAndCall` 的實做方法與潛在威脅進行了優化與增強，其中，讓 `receiverContract` 也就是服務智能合約 (Service contract) 收到正確的代幣傳輸數字 (Value) 與正確的代幣傳送者 (Transfer sender)，讓 `receiverContract` 不會攻擊代幣傳送者，詳細會在下面補充。
 
 關於針對代幣化所做的補強，是基於了服務友善化之後，進一步地移除手續費成本或時間成本，有以下兩種：
 
