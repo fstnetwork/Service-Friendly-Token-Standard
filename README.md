@@ -2,7 +2,7 @@
 eip: <to be assigned>
 title: Service-Friendly Token Standard
 author:
-  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930)
+  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930), Jack Chu <jack@fstk.io>, Leo Chou <leo@fstk.io>, Darren Goh <darren@fstk.io>
 discussions-to: <URL>
 status: Draft
 type: Standard
