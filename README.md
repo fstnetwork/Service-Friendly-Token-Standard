@@ -80,8 +80,9 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 
 對於代幣化所做的再補強，是基於了服務友善化之後，進一步移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙，有以下兩種：
 
-1.  使代幣支援週期性的被動操作
-2.  使代幣在被操作時，終端使用者不用負擔以太坊手續費
+1.  使代幣支援週期性的被動操作，例如定期直接扣款，就像是每月自動繳付信用卡費用一般
+2.  使代幣支援一次性大量操作
+3.  使代幣在被操作時，終端使用者不用負擔以太坊手續費
 
 目前，被動操作在代幣上的實現方式為 `approve` 一個對象，使這個對象可以自行依照 `allowance` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
 
@@ -252,14 +253,14 @@ uint8 public constant decimals;
 
 在 `Account` 中
 
-- `balance` 為擁有代幣數、餘額，與 `decimals` 有關
-- `nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
-- `instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
+- `uint256 balance` 為擁有代幣數、餘額，與 `decimals` 有關
+- `uint256 nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
+- `mapping (address => Instrument) instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
 
 在 `Instrument` 中
 
-- `allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
-- `directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
+- `uint256 allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
 
 ```
 struct Instrument {
@@ -280,9 +281,10 @@ mapping(address => Account) internal accounts;
 
 #### 會變動的代幣資訊
 
-- `totalSupply` 為代幣總發行量
-- `balanceOf` 為查詢代幣擁有者的代幣餘額
-- `allowance` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `totalSupply()` 為代幣總發行量
+- `balanceOf(address)` 為查詢代幣擁有者的代幣餘額
+- `allowance(address)` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `issuer()` 為代幣發行者位址，這雖然非 ERC20 標準，而於諸多操作中需要此資訊之檢查
 
 ```
 function totalSupply () public view returns (uint256);
@@ -294,14 +296,16 @@ function balanceOf(address owner) public view returns (uint256) {
 function allowance(address owner, address spender) public view returns (uint256) {
   return accounts[owner].instruments[spender].allowance;
 }
+
+address public issuer;
 ```
 
 ---
 
 #### 代幣事件
 
-- `Transfer` 為任何一個代幣數字變動時應發射的事件
-- `Approval` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
+- `Transfer(address,address,uint256)` 為任何一個代幣數字變動時應發射的事件
+- `Approval(address,address,uint256)` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
 
 ```
 event Transfer(address indexed from, address indexed to, uint256 value);
@@ -367,7 +371,7 @@ function approve(address spender, uint256 value) public returns (bool) {
 }
 ```
 
-`approve` 中的 `erc20ApproveChecking` 請見下一個部份。
+`approve(address,uint256)` 中的 `erc20ApproveChecking` 請見下一個部份。
 
 而當 `erc20ApproveChecking` 開啟時，此 `approve` 中會額外做的檢查為，檢查 `spender` 目前的 `allowance` 是否為 0，以防 spender 插隊攻擊代幣擁有者。
 
@@ -375,12 +379,12 @@ function approve(address spender, uint256 value) public returns (bool) {
 
 #### 增強安全用代幣資訊、操作
 
-- `erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`
-- `SetERC20ApproveChecking` 為 `erc20ApproveChecking` 改變時會發射的事件
-- `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
-- `increaseAllowance` 可直接增加 `allowance`
-- `decreaseAllowance` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
-- `spendableAllowance` 可直接得知被允許之帳戶可以實際上消耗多少額度
+- `bool erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
+- `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件，需要透過 `setERC20ApproveChecking(bool)` 引發
+- `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
+- `increaseAllowance(address,uint256)` 可直接增加 `allowance`
+- `decreaseAllowance(address,uint256)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+- `spendableAllowance(address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 (安全版 ERC20)</summary>
 
@@ -390,6 +394,7 @@ bool public erc20ApproveChecking;
 event SetERC20ApproveChecking(bool approveChecking);
 
 function setERC20ApproveChecking(bool approveChecking) public {
+  require(msg.sender == issuer);
   emit SetERC20ApproveChecking(erc20ApproveChecking = approveChecking);
 }
 
@@ -458,7 +463,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 為了讓傳輸代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
 
-在 `transferAndCall` 的參數中
+在 `transferAndCall(address,uint256,bytes)` 的參數中
 
 - `address to` 為接收者智能合約的位址
 - `uint256 value` 為代幣傳輸量，與 `transfer` 的一樣意義
@@ -547,9 +552,112 @@ transferAndCall(
 
 ### Tokenisation (代幣化) 補強
 
----
+#### 週期性的直接扣款
 
----
+直接扣款系列的實作是使代幣擁有者可以週期性地允許外部服務週期性地扣款
+
+在上述的 `Instrument` 結構中的 `DirectDebit` 中:
+
+ - `DirectDebitInfo info` 為直接扣款資訊
+ - `uint256 epoch` 為紀錄已經被扣款過的期數
+
+在 `DirectDebitInfo` 中:
+
+ - `uint256 amount` 為每期的允許扣款額度
+ - `uint256 startTime` 為允許的開始扣款時間
+ - `uint256 interval` 為每期的週期間隔時間
+
+```
+struct DirectDebit {
+  DirectDebitInfo info;
+  uint256 epoch;
+}
+
+struct DirectDebitInfo {
+  uint256 amount;
+  uint256 startTime;
+  uint256 interval;
+}
+```
+
+直接扣款也是一個可以開啟或關閉的功能:
+
+- `bool isDirectDebitEnable` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
+- `SetDirectDebit(bool)` 為 `isDirectDebitEnable` 改變時會發射的事件，需要透過 `setDirectDebit(bool)` 引發
+
+```
+bool public isDirectDebitEnable;
+
+event SetDirectDebit(bool isDirectDebitEnable);
+
+function setDirectDebit(bool directDebit) public {
+  require(msg.sender == issuer);
+  emit SetDirectDebit(isDirectDebitEnable = directDebit);
+}
+```
+
+設定直接扣款的操作中:
+
+ - `SetupDirectDebit(address,address,(uint256,uint256,uint256))` 為當一個代幣擁有者對某個位址設定了允許直接扣款時，所發射的事件
+ - `setupDirectDebit(address,(uint256,uint256,uint256))` 為代幣擁有者允許某個位址定期直接扣款的操作
+
+```
+function setupDirectDebit(
+  address receiver,
+  DirectDebitInfo info
+)
+  public
+  returns (bool)
+{
+  accounts[msg.sender].instruments[receiver].directDebit = DirectDebit({
+    info: info,
+    epoch: 0
+  });
+
+  emit SetupDirectDebit(msg.sender, receiver, info);
+  return true;
+}
+```
+
+例如設定了每期 10 代幣，開始時間為 2019-01-01T08:08:08.000Z，每期間隔為 2 天
+
+```
+       epoch 1           epoch 2           epoch 3
+ |-----10token-----|-----10token-----|-----10token-----|
+ S              S+2days           S+4days           S+6days
+```
+
+假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 - N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
+
+扣款方在直接扣款的操作中:
+
+ - `withdrawDirectDebit(address)` 為扣款方指定被扣款方並進行扣款的操作，並會觸發 `Transfer(address,address,uint256)`  事件
+
+```
+function withdrawDirectDebit(address debtor) public returns (bool) {
+  require(isDirectDebitEnable);
+
+  Account storage debtorAccount = accounts[debtor];
+  DirectDebit storage debit = debtorAccount.instruments[msg.sender].directDebit;
+
+  uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
+  uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
+  
+  require(amount > 0);
+  
+  debtorAccount.balance = debtorAccount.balance.sub(amount);
+  accounts[msg.sender].balance += amount;
+  debit.epoch = epoch;
+
+  emit Transfer(debtor, msg.sender, amount);
+  
+  return true;
+}
+```
+
+#### 一次性大量操作
+
+#### 代幣傳送委派、代幣轉發
 
 ---
 
