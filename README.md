@@ -381,9 +381,10 @@ function approve(address spender, uint256 value) public returns (bool) {
 
  - `erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`
  - `SetERC20ApproveChecking` 為 `erc20ApproveChecking` 改變時會發射的事件
- - 安全版的 `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
+ - `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
  - `increaseAllowance` 可直接增加 `allowance`
  - `decreaseAllowance` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+ - `spendableAllowance` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 (安全版 ERC20)</summary>
 
@@ -443,6 +444,14 @@ function decreaseAllowance(address spender, uint256 value, bool strict) public r
 
   return true;
 }
+
+function spendableAllowance(address owner, address spender) public view returns (uint256) {
+  Account storage ownerAccount = accounts[owner];
+  return Math.min(
+    ownerAccount.instruments[spender].allowance,
+    ownerAccount.balance
+  );
+}
 ```
 
 </details>
@@ -452,6 +461,8 @@ function decreaseAllowance(address spender, uint256 value, bool strict) public r
 ### Service-Friendly (服務友善化) 補強
 
 ---
+
+
 
 ---
 
