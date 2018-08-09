@@ -129,7 +129,6 @@ library AddressExtension {
     }
   }
 }
-
 ```
 
 </details>
@@ -231,7 +230,6 @@ library Math {
     });
   }
 }
-
 ```
 
 </details>
@@ -240,9 +238,9 @@ library Math {
 
 #### 基本的代幣資訊，一開始就指定好並且是常數性的。
 
- - `name` 為代幣名稱
- - `symbol` 為代幣代號
- - `decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
+- `name` 為代幣名稱
+- `symbol` 為代幣代號
+- `decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
 
 ```
 string public constant name;
@@ -256,14 +254,14 @@ uint8 public constant decimals;
 
 在 `Account` 中
 
- - `balance` 為擁有代幣數、餘額，與 `decimals` 有關
- - `nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
- - `instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
+- `balance` 為擁有代幣數、餘額，與 `decimals` 有關
+- `nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
+- `instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
 
 在 `Instrument` 中
 
- - `allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
- - `directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
+- `allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
 
 ```
 struct Instrument {
@@ -284,9 +282,9 @@ mapping(address => Account) internal accounts;
 
 #### 會變動的代幣資訊
 
- - `totalSupply` 為代幣總發行量
- - `balanceOf` 為查詢代幣擁有者的代幣餘額
- - `allowance` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `totalSupply` 為代幣總發行量
+- `balanceOf` 為查詢代幣擁有者的代幣餘額
+- `allowance` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
 
 ```
 function totalSupply () public view returns (uint256);
@@ -304,8 +302,8 @@ function allowance(address owner, address spender) public view returns (uint256)
 
 #### 代幣事件
 
- - `Transfer` 為任何一個代幣數字變動時應發射的事件
- - `Approval` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
+- `Transfer` 為任何一個代幣數字變動時應發射的事件
+- `Approval` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
 
 ```
 event Transfer(address indexed from, address indexed to, uint256 value);
@@ -322,7 +320,7 @@ emit Transfer(address(0), <tokenIssuer>, <totalSupply>);
 
 #### 代幣的操作相關函數
 
-以下與數學相關的操作，特別是減法的部份就會以 `Math` 的延伸方法進行操作，並搭配讀取 `accounts` 映射表來降低映射表操作次數
+以下與 ERC20 的介面標準是一樣的，但與數學相關的操作，特別是減法的部份就會以 `Math` 的延伸方法進行操作，並搭配讀取 `accounts` 映射表來降低映射表操作次數
 
 ```
 function transfer(address to, uint256 value) public returns (bool) {
@@ -379,12 +377,12 @@ function approve(address spender, uint256 value) public returns (bool) {
 
 #### 增強安全用代幣資訊、操作
 
- - `erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`
- - `SetERC20ApproveChecking` 為 `erc20ApproveChecking` 改變時會發射的事件
- - `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
- - `increaseAllowance` 可直接增加 `allowance`
- - `decreaseAllowance` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
- - `spendableAllowance` 可直接得知被允許之帳戶可以實際上消耗多少額度
+- `erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`
+- `SetERC20ApproveChecking` 為 `erc20ApproveChecking` 改變時會發射的事件
+- `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
+- `increaseAllowance` 可直接增加 `allowance`
+- `decreaseAllowance` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+- `spendableAllowance` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 (安全版 ERC20)</summary>
 
@@ -462,9 +460,82 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 ---
 
+#### Transfer and call (傳輸呼叫))
 
+為了讓傳輸代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
 
----
+在 `transferAndCall` 中
+
+- `to` 為接收者智能合約的位址
+- `value` 為代幣傳輸量，與 `transfer` 的一樣意義
+- `data` 為後續所有連續動作都需要的參數資料，與 `Address.call(data)` 搭配使用，其中應內含 `value` 與 `msg.sender`
+
+因為 `data` 最少要包含要傳遞給接收者智能合約的資料，故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
+
+也會進行下列檢查
+
+- 禁止 `to` 為合約本身
+- 檢查 `data` 的長度需大於等於 68 bytes
+- 檢查確定代幣傳輸已經完成
+
+以及對於 data 的前兩個參數進行強制覆蓋，讓 `data` 中必定是 [4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]，故意讓 `value` 先而 `sender` 後的原因為，不與 `to` `value` 的組合順序搞混
+
+```
+// Token Contract (TokenA, decimals = 18)
+
+function transferAndCall(
+  address to,
+  uint256 value,
+  bytes data
+)
+  public
+  payable
+  returns (bool)
+{
+  require(
+    to != address(this) &&
+    data.length >= 68 &&
+    transfer(to, value)
+  );
+  assembly {
+      mstore(add(data, 36), value)  // 32 (length) + 4 (sign)
+      mstore(add(data, 68), caller) // 32 (length) + 4 (sign) + 32 (1st arg)
+  }
+  require(to.call.value(msg.value)(data));
+  return true;
+}
+```
+
+以及，接收者智能合約的範例:
+
+```
+// Receiver Contract (Vendor machine, sells TokenB)
+
+function purchase(
+  uint256 value,
+  address buyer
+)
+  public
+  payable
+  returns (bool)
+{
+  require(msg.sender == address(TokenA));
+
+  return TokenB.transfer(buyer, calculateAmount(value));
+}
+```
+
+所以要使終端使用者可以用 100 TokenA 購買 TokenB 時，只要能編碼下列 tx input，簽署並送出即可，假設 `msg.sender` (buyer) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
+
+```
+transferAndCall("0x1234567890123456789012345678901234567890", "100000000000000000000", "0xae77c23700000000000000000000000083b21dbd0e60b9709d647de183f5ae0c31b54c2a0000000000000000000000000000000000000000000000056bc75e2d63100000");
+```
+
+或者擺隨意的 bytes 在後面，但 signature 不能影響到
+
+```
+transferAndCall("0x1234567890123456789012345678901234567890", "100000000000000000000", "0xae77c23700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
+```
 
 ---
 
