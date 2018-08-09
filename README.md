@@ -536,7 +536,7 @@ transferAndCall(
   "0xae77c23700000000000000000000000083b21dbd0e60b9709d647de183f5ae0c31b54c2a0000000000000000000000000000000000000000000000056bc75e2d63100000");
 ```
 
-或者擺隨意的 bytes 在後面，但 signature 不能影響到
+或者擺隨意的 bytes 在後面，但 signature 不能影響到 ( ```"0x" + keccak256("purchase(uint256,address)")[0~7]``` = `0xae77c237` )
 
 ```
 transferAndCall(
