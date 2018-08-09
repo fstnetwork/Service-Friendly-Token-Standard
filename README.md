@@ -8,7 +8,6 @@ type: Standard
 category: ERC
 created: 2018-07-31
 requires: ERC-20
-
 ---
 
 # Service-Friendly-Token-Standard
@@ -82,7 +81,7 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 1.  使代幣支援週期性的被動操作
 2.  使代幣在被操作時，終端使用者不用負擔以太坊手續費
 
-目前，被動操作在代幣上的實現方式為 `approve` 一個對象，使這個對象可以自行依照 `approval` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
+目前，被動操作在代幣上的實現方式為 `approve` 一個對象，使這個對象可以自行依照 `allowance` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
 
 最後我們談到，目前以太坊上的代幣環境受到最大阻力的一個技術性原因，就是當終端使用者在傳輸代幣的時候，要支付以太幣當作手續費。這件事情的脈落若是以太坊身為一個去中心計算平台、金流平台，執行智能合約時支付燃料來穩定網路、回饋挖礦者或驗證者的話，無不合理而且大家都贊同。但以代幣終端使用者角度而言，這件事情就變得非常不正確，「沒有以太幣則無法使用代幣服務」的限制，讓代幣環境遭受到最大的「代幣化」阻礙。
 
@@ -93,6 +92,363 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 ## Specification
 
 <!--The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Ethereum platforms (go-ethereum, parity, cpp-ethereum, ethereumj, ethereumjs, and [others](https://github.com/ethereum/wiki/wiki/Clients)).-->
+
+### ERC-20 補強
+
+---
+
+#### 對於 `address` 與 `uint256` 的延伸
+
+<details><summary>AddressExtension</summary>
+
+```
+pragma solidity ^0.4.24;
+pragma experimental "v0.5.0";
+pragma experimental ABIEncoderV2;
+
+library AddressExtension {
+
+  function isValid(address _address) internal pure returns (bool) {
+    return 0 != _address;
+  }
+
+  function isAccount(address _address) internal view returns (bool result) {
+    assembly {
+      result := iszero(extcodesize(_address))
+    }
+  }
+
+  function toBytes(address _address) internal pure returns (bytes b) {
+   assembly {
+      let m := mload(0x40)
+      mstore(add(m, 20), xor(0x140000000000000000000000000000000000000000, _address))
+      mstore(0x40, add(m, 52))
+      b := m
+    }
+  }
+}
+
+```
+
+</details>
+
+<details><summary>Math</summary>
+
+```
+pragma solidity ^0.4.24;
+pragma experimental "v0.5.0";
+pragma experimental ABIEncoderV2;
+
+library Math {
+
+  struct Fraction {
+    uint256 numerator;
+    uint256 denominator;
+  }
+
+  function isPositive(Fraction memory fraction) internal pure returns (bool) {
+    return fraction.numerator > 0 && fraction.denominator > 0;
+  }
+
+  function mul(uint256 a, uint256 b) internal pure returns (uint256 r) {
+    r = a * b;
+    require((a == 0) || (r / a == b));
+  }
+
+  function div(uint256 a, uint256 b) internal pure returns (uint256 r) {
+    r = a / b;
+  }
+
+  function sub(uint256 a, uint256 b) internal pure returns (uint256 r) {
+    require((r = a - b) <= a);
+  }
+
+  function add(uint256 a, uint256 b) internal pure returns (uint256 r) {
+    require((r = a + b) >= a);
+  }
+
+  function min(uint256 x, uint256 y) internal pure returns (uint256 r) {
+    return x <= y ? x : y;
+  }
+
+  function max(uint256 x, uint256 y) internal pure returns (uint256 r) {
+    return x >= y ? x : y;
+  }
+
+  function mulDiv(uint256 value, uint256 m, uint256 d) internal pure returns (uint256 r) {
+    // try mul
+    r = value * m;
+    if (r / value == m) {
+      // if mul not overflow
+      r /= d;
+    } else {
+      // else div first
+      r = mul(value / d, m);
+    }
+  }
+
+  function mulDivCeil(uint256 value, uint256 m, uint256 d) internal pure returns (uint256 r) {
+    // try mul
+    r = value * m;
+    if (r / value == m) {
+      // mul not overflow
+      if (r % d == 0) {
+        r /= d;
+      } else {
+        r = (r / d) + 1;
+      }
+    } else {
+      // mul overflow then div first
+      r = mul(value / d, m);
+      if (value % d != 0) {
+        r += 1;
+      }
+    }
+  }
+
+  function mul(uint256 x, Fraction memory f) internal pure returns (uint256) {
+    return mulDiv(x, f.numerator, f.denominator);
+  }
+
+  function mulCeil(uint256 x, Fraction memory f) internal pure returns (uint256) {
+    return mulDivCeil(x, f.numerator, f.denominator);
+  }
+
+  function div(uint256 x, Fraction memory f) internal pure returns (uint256) {
+    return mulDiv(x, f.denominator, f.numerator);
+  }
+
+  function divCeil(uint256 x, Fraction memory f) internal pure returns (uint256) {
+    return mulDivCeil(x, f.denominator, f.numerator);
+  }
+
+  function mul(Fraction memory x, Fraction memory y) internal pure returns (Math.Fraction) {
+    return Math.Fraction({
+      numerator: mul(x.numerator, y.numerator),
+      denominator: mul(x.denominator, y.denominator)
+    });
+  }
+}
+
+```
+
+</details>
+
+---
+
+#### 基本的代幣資訊，一開始就指定好並且是常數性的。
+
+ - `name` 為代幣名稱
+ - `symbol` 為代幣代號
+ - `decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
+
+```
+string public constant name;
+string public constant symbol;
+uint8 public constant decimals;
+```
+
+---
+
+#### 優化過的儲存代幣擁有者的資訊，實作部份
+
+在 `Account` 中
+
+ - `balance` 為擁有代幣數、餘額，與 `decimals` 有關
+ - `nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
+ - `instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
+
+在 `Instrument` 中
+
+ - `allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
+ - `directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
+
+```
+struct Instrument {
+  uint256 allowance;
+  DirectDebit directDebit;
+}
+
+struct Account {
+  uint256 balance;
+  uint256 nonce;
+  mapping (address => Instrument) instruments;
+}
+
+mapping(address => Account) internal accounts;
+```
+
+---
+
+#### 會變動的代幣資訊
+
+ - `totalSupply` 為代幣總發行量
+ - `balanceOf` 為查詢代幣擁有者的代幣餘額
+ - `allowance` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
+
+```
+function totalSupply () public view returns (uint256);
+
+function balanceOf(address owner) public view returns (uint256) {
+  return accounts[owner].balance;
+}
+
+function allowance(address owner, address spender) public view returns (uint256) {
+  return accounts[owner].instruments[spender].allowance;
+}
+```
+
+---
+
+#### 代幣事件
+
+ - `Transfer` 為任何一個代幣數字變動時應發射的事件
+ - `Approval` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
+
+```
+event Transfer(address indexed from, address indexed to, uint256 value);
+event Approval(address indexed owner, address indexed spender, uint256 value);
+```
+
+其中，因為支持絕大部分的區塊鏈瀏覽器服務，如 Etherscan ，在代幣一開始被建構時，發射事件，表示初始代幣發行。
+
+```
+emit Transfer(address(0), <tokenIssuer>, <totalSupply>);
+```
+
+---
+
+#### 代幣的操作相關函數
+
+以下與數學相關的操作，特別是減法的部份就會以 `Math` 的延伸方法進行操作，並搭配讀取 `accounts` 映射表來降低映射表操作次數
+
+```
+function transfer(address to, uint256 value) public returns (bool) {
+  Account storage senderAccount = accounts[msg.sender];
+
+  // guarded by Math
+  senderAccount.balance = senderAccount.balance.sub(value);
+  // guarded by totalSupply
+  accounts[to].balance += value;
+
+  emit Transfer(msg.sender, to, value);
+
+  return true;
+}
+
+function transferFrom(address from, address to, uint256 value) public returns(bool) {
+  Account storage fromAccount = accounts[from];
+  Instrument storage senderInstrument = fromAccount.instruments[msg.sender];
+
+  // guarded by Math
+  fromAccount.balance = fromAccount.balance.sub(value);
+  // guarded by Math
+  senderInstrument.allowance = senderInstrument.allowance.sub(value);
+  // guarded by totalSupply
+  accounts[to].balance += value;
+
+  emit Transfer(from, to, value);
+
+  return true;
+}
+
+function approve(address spender, uint256 value) public returns (bool) {
+  Instrument storage spenderInstrument = accounts[msg.sender].instruments[spender];
+
+  if (erc20ApproveChecking) {
+    require((value == 0) || (spenderInstrument.allowance == 0));
+  }
+
+  emit Approval(
+    msg.sender,
+    spender,
+    spenderInstrument.allowance = value
+  );
+
+  return true;
+}
+```
+
+`approve` 中的 `erc20ApproveChecking` 請見下一個部份。
+
+而當 `erc20ApproveChecking` 開啟時，此 `approve` 中會額外做的檢查為，檢查 `spender` 目前的 `allowance` 是否為 0，以防 spender 插隊攻擊代幣擁有者。
+
+---
+
+#### 增強安全用代幣資訊、操作
+
+ - `erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`
+ - `SetERC20ApproveChecking` 為 `erc20ApproveChecking` 改變時會發射的事件
+ - 安全版的 `approve` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
+ - `increaseAllowance` 可直接增加 `allowance`
+ - `decreaseAllowance` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+
+<details><summary>Secure ERC20 (安全版 ERC20)</summary>
+
+```
+bool public erc20ApproveChecking;
+
+event SetERC20ApproveChecking(bool approveChecking);
+
+function setERC20ApproveChecking(bool approveChecking) public {
+  emit SetERC20ApproveChecking(erc20ApproveChecking = approveChecking);
+}
+
+function approve(address spender, uint256 expectedValue, uint256 newValue) public returns (bool) {
+  Instrument storage spenderInstrument = accounts[msg.sender].instruments[spender];
+  require(spenderInstrument.allowance == expectedValue);
+
+  emit Approval(
+    msg.sender,
+    spender,
+    spenderInstrument.allowance = newValue
+  );
+
+  return true;
+}
+
+function increaseAllowance(address spender, uint256 value) public returns (bool) {
+  Instrument storage spenderInstrument = accounts[msg.sender].instruments[spender];
+
+  emit Approval(
+    msg.sender,
+    spender,
+    // guarded by Math
+    spenderInstrument.allowance = spenderInstrument.allowance.add(value)
+  );
+
+  return true;
+}
+
+function decreaseAllowance(address spender, uint256 value, bool strict) public returns (bool) {
+  Instrument storage spenderInstrument = accounts[msg.sender].instruments[spender];
+
+  uint256 currentValue = spenderInstrument.allowance;
+  uint256 newValue;
+  if (strict) {
+    // guarded by Math
+    newValue = currentValue.sub(value);
+  } else if (value < currentValue) {
+    // guarded by if
+    newValue = currentValue - value;
+  }
+
+  emit Approval(
+    msg.sender,
+    spender,
+    spenderInstrument.allowance = newValue
+  );
+
+  return true;
+}
+```
+</details>
+
+---
+
+### Service-Friendly (服務友善化) 補強
+
+### Tokenisation (代幣化) 補強
 
 ## Rationale
 
