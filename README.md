@@ -602,6 +602,8 @@ function setDirectDebit(bool directDebit) public {
  - `setupDirectDebit(address,(uint256,uint256,uint256))` 為代幣擁有者允許某個位址定期直接扣款的操作
 
 ```
+event SetupDirectDebit(address indexed debtor, address indexed receiver, DirectDebitInfo info);
+
 function setupDirectDebit(
   address receiver,
   DirectDebitInfo info
@@ -619,15 +621,27 @@ function setupDirectDebit(
 }
 ```
 
+要檢查直接扣款相關設定時:
+
+ - `directDebit(address,address)` 為查看直接扣款資訊的操作
+
+```
+function directDebit(address debtor, address receiver) public view returns (DirectDebit) {
+  return accounts[debtor].instruments[receiver].directDebit;
+}
+```
+
 例如設定了每期 10 代幣，開始時間為 2019-01-01T08:08:08.000Z，每期間隔為 2 天
 
 ```
-       epoch 1           epoch 2           epoch 3
- |-----10token-----|-----10token-----|-----10token-----|
- S              S+2days           S+4days           S+6days
+ |     epoch 1     |     epoch 2     |     epoch 3     |     epoch 4     |
+ |-----10token-----|-----10token-----|-----10token-----|-----10token-----|----------
+ S              S+2days           S+4days           S+6days           S+8days
 ```
 
-假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 - N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
+假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 ~ N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
+
+而假如扣款方的第一次扣款在 2019-01-05T08:08:08.000Z (S+4days) 這一瞬間，則一次可以扣款到 60 token，等於滿足到了 epoch 3，下次扣款只能在最早 2019-01-07T08:08:08.000Z (S+6days) 之後，也就是 epoch 4
 
 扣款方在直接扣款的操作中:
 
@@ -655,9 +669,114 @@ function withdrawDirectDebit(address debtor) public returns (bool) {
 }
 ```
 
+一旦代幣擁有者想要撤銷某個地址的定期直接扣款，則直接將 `directDebit` 移除即可
+
+ - `TerminateDirectDebit(address,address)` 為代幣擁有者撤銷直接扣款權力時所發射的事件，透過 `terminateDirectDebit(address)` 觸發
+ - `terminateDirectDebit(address)` 為代幣擁有者撤銷直接扣款時的操作
+
+```
+event TerminateDirectDebit(address indexed debtor, address indexed receiver);
+
+function terminateDirectDebit(address receiver) public returns (bool) {
+  delete accounts[msg.sender].instruments[receiver].directDebit;
+
+  emit TerminateDirectDebit(msg.sender, receiver);
+
+  return true;
+}
+```
+
 #### 一次性大量操作
 
+一次性的多個傳輸代幣
+
+ - `transfer(uint256[])` 為一次性傳輸代幣給多個對象時所作的操作
+ - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
+
+為減少所需要帶上的參數，我們將接收者位址 (receviers) 跟 代幣傳輸量 (values) 合在了一起，在一個 32 bytes 的 `uint256` 數字裡面就能紀錄接收者地址與代幣傳輸量
+
+只不過 12 bytes 能紀錄的量對於 decimals = 18 的代幣而言，就不能傳太過於大的數字了，但至少對每個接收者也有 79,228,162,514.264337593543950335 個代幣可傳 (已經經過了 decimals 的處理以便人類理解))，以一個健康的代幣而言已經超越總代幣發行量，也就是 `0xffffffffffffffffffffffff / (10 ** 18)`
+
+並且為了正確顯示在區塊鏈瀏覽器上，必須每個 `Transfer(address,address,value)` 事件都要射出，然後也為了優化 storage 的讀寫，最後才會將所花上的餘額寫入代幣擁有者的餘額中
+
+```
+function transfer(uint256[] data) public returns (bool) {
+  Account storage senderAccount = accounts[msg.sender];
+  uint256 totalValue;
+
+  for (uint256 i = 0; i < data.length; i++) {
+    address receiver = address(data[i] >> 96);
+    uint256 value = data[i] & 0xffffffffffffffffffffffff;
+
+    totalValue = totalValue.add(value);
+    accounts[receiver].balance += value;
+
+    emit Transfer(msg.sender, receiver, value);
+  }
+
+  senderAccount.balance = senderAccount.balance.sub(totalValue);
+
+  return true;
+}
+```
+
+---
+
+一次性的多個直接扣款
+
+ - `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
+ - `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
+
+`strict` 為 `true` 表示當其中一個人直接扣款失敗時，整個操作都會失敗，並 `revert()`
+
+如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，方便鏈外環境可以偵測問題
+
+並且為了正確顯示在區塊鏈瀏覽器上，任何成功的直接扣款都必須發射 `Transfer(address,address,value)` 事件
+
+```
+event WithdrawDirectDebitFailure(address indexed debtor, address indexed receiver);
+
+function withdrawDirectDebit(address[] debtors, bool strict) public returns (bool result) {
+  require(isDirectDebitEnable);
+
+  Account storage receiverAccount = accounts[msg.sender];
+  result = true;
+  uint256 total;
+
+  for (uint256 i = 0; i < debtors.length; i++) {
+    address debtor = debtors[i];
+    Account storage debtorAccount = accounts[debtor];
+    DirectDebit storage debit = debtorAccount.instruments[msg.sender].directDebit;
+    
+    uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
+    uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
+    
+    require(amount > 0);
+    
+    uint256 debtorBalance = debtorAccount.balance;
+
+    if (amount > debtorBalance) {
+      if (strict) {
+        revert();
+      }
+      result = false;
+      emit WithdrawDirectDebitFailure(debtor, msg.sender);
+    } else {
+      debtorAccount.balance = debtorBalance - amount;
+      total += amount;
+      debit.epoch = epoch;
+
+      emit Transfer(debtor, msg.sender, amount);
+    }
+  }
+
+  receiverAccount.balance += total;
+}
+```
+
 #### 代幣傳送委派、代幣轉發
+
+
 
 ---
 
@@ -671,19 +790,20 @@ The rationale fleshes out the specification by describing what motivated the des
 
 <!--All EIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The EIP must explain how the author proposes to deal with these incompatibilities. EIP submissions without a sufficient backwards compatibility treatise may be rejected outright.-->
 
-All EIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The EIP must explain how the author proposes to deal with these incompatibilities. EIP submissions without a sufficient backwards compatibility treatise may be rejected outright.
+此代幣標準完全支援並相容 ERC20 標準
 
 ## Test Cases
 
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
-Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.
+經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試
+原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/ServiceFriendlyToken.sol
 
 ## Implementation
 
 <!--The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.-->
 
-The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.
+Funder Smart Token 為一種 Service-Friendly Token (服務友善型代幣)，於 mainnet 的位址在: https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
 
 ## Copyright
 
