@@ -10,7 +10,7 @@ created: 2018-07-31
 requires: ERC-20
 ---
 
-# Service-Friendly-Token-Standard
+# Service-Friendly Token Standard
 
 ## Simple Summary
 
@@ -444,13 +444,26 @@ function decreaseAllowance(address spender, uint256 value, bool strict) public r
   return true;
 }
 ```
+
 </details>
 
 ---
 
 ### Service-Friendly (服務友善化) 補強
 
+---
+
+---
+
+---
+
 ### Tokenisation (代幣化) 補強
+
+---
+
+---
+
+---
 
 ## Rationale
 
