@@ -460,7 +460,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 ---
 
-#### Transfer and call (傳輸呼叫))
+#### Transfer and call (傳輸呼叫)
 
 為了讓傳輸代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
 
