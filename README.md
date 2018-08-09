@@ -284,7 +284,7 @@ mapping(address => Account) internal accounts;
 - `totalSupply()` 為代幣總發行量
 - `balanceOf(address)` 為查詢代幣擁有者的代幣餘額
 - `allowance(address)` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
-- `issuer()` 為代幣發行者位址，這雖然非 ERC20 標準，而於諸多操作中需要此資訊之檢查
+- `address issuer` 為代幣發行者位址，這雖然非 ERC20 標準，而於諸多操作中需要此資訊之檢查
 
 ```
 function totalSupply () public view returns (uint256);
