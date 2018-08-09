@@ -791,6 +791,24 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 
 此為代幣化關鍵的一個介面，讓代幣的傳送不再需要以太幣當作手續費，而是以也付代幣當作手續費的轉變
 
+代幣轉發也是一個可以開啟或關閉的功能:
+
+- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
+- `SetDelegate(bool)` 為 `isDelegateEnable` 改變時會發射的事件，需要透過 `setDelegate(bool)` 引發
+
+```
+bool public isDelegateEnable;
+
+event SetDelegate(bool isDelegateEnable);
+
+function setDelegate(bool delegate) public {
+  require(msg.sender == issuer);
+  emit setDelegate(isDelegateEnable = delegate);
+}
+```
+
+---
+
 在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
 - `uint256 nonce` 代表此被委派的傳送是第幾個傳送，這是為了防止雙花攻擊
