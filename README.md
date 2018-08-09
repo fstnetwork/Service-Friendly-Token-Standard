@@ -913,7 +913,7 @@ function nonceOf(address owner) public view returns (uint256) {
 }
 ```
 
-而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救，故須 nonce 方面的操作
+而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救，進行強制覆蓋，故須 nonce 方面的操作
 
  - `IncreaseNonce(address,uint256)` 為 nonce 增加時所發射的事件，唯有 `delegateTransferAndCall()` 與 `increaseNonce()` 觸發
  - `increaseNonce()` 為代幣傳送者手動增加 nonce 之操作
