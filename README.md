@@ -515,14 +515,15 @@ function transferAndCall(
 }
 ```
 
-以及，接收者智能合約的範例:
+以及，接收者智能合約的函數就需要配合前兩個參數為 `uint256 value` 以及 `address from`  
+範例:
 
 ```
 // Receiver Contract (Vendor machine, sells TokenB)
 
 function purchase(
   uint256 value,
-  address buyer
+  address from
 )
   public
   payable
@@ -530,13 +531,13 @@ function purchase(
 {
   require(msg.sender == address(TokenA));
 
-  return TokenB.transfer(buyer, calculateAmount(value));
+  return TokenB.transfer(from, calculateAmount(value));
 }
 ```
 
 所以要使終端使用者可以用 100 TokenA 購買 TokenB 時，只要能編碼下列 tx input，簽署並送出即可
 
-假設 `msg.sender` (buyer) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
+假設 `msg.sender` (from) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
 
 ```
 transferAndCall(
