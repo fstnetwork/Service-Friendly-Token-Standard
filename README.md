@@ -1,13 +1,14 @@
 ---
 eip: <to be assigned>
 title: Service-Friendly Token Standard
-author: Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930)
+author:
+  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930)
 discussions-to: <URL>
 status: Draft
 type: Standard
 category: ERC
 created: 2018-08-08
-requires: ERC-20
+requires: 20
 ---
 
 # Service-Friendly Token Standard
@@ -62,7 +63,7 @@ ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被�
 >
 > A 是 EA and CA
 
-絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行。
+絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行，甚至可能被其他智能合約攻擊，藉由故意消耗原意以外的 `allowance` 的方式。
 
 從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊的 transaction 執行流程，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
 
@@ -70,7 +71,12 @@ ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被�
 
 FundersToken 在提供模組化智能合約與代幣化服務時，在開發過程中體驗到相當多的代幣不方便的環境。我們的流程目標為:
 
-    (EA) --[transfer or call]-> (CA 1) --[transfer or call]-> (CA 2) --[transfer or call]-> ... --[transfer or call]-> (A)
+```
+(EA) --[transfer and call]-> (CA 1)
+     --[transfer and call]-> (CA 2)
+     --[transfer and call]-> ...
+     --[transfer and call]-> (A)
+```
 
 簡單來說，我們希望代幣的金流或業務流程可以像是以太坊原本的方式一樣自然，並且讓代幣相關的服務開發起來是簡單直覺的，而非受了太多 ERC-20 沒有解決到的阻礙，造成業務擴展受到影響。
 
@@ -237,9 +243,9 @@ library Math {
 
 #### 基本的代幣資訊，一開始就指定好並且是常數性的。
 
-- `name` 為代幣名稱
-- `symbol` 為代幣代號
-- `decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
+- `string name` 為代幣名稱
+- `string symbol` 為代幣代號
+- `uint8 decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
 
 ```
 string public constant name;
@@ -253,7 +259,7 @@ uint8 public constant decimals;
 
 在 `Account` 中
 
-- `uint256 balance` 為擁有代幣數、餘額，與 `decimals` 有關
+- `uint256 balance` 為擁有代幣數、餘額
 - `uint256 nonce` 為擁有者所操作過的 transfer (代幣傳輸) 個數，避免傳送，但只用於轉發模式，在後面將會說明
 - `mapping (address => Instrument) instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
 
@@ -284,7 +290,7 @@ mapping(address => Account) internal accounts;
 - `totalSupply()` 為代幣總發行量
 - `balanceOf(address)` 為查詢代幣擁有者的代幣餘額
 - `allowance(address)` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
-- `address issuer` 為代幣發行者位址，這雖然非 ERC20 標準，而於諸多操作中需要此資訊之檢查
+- `address issuer` 為代幣發行者位址，這雖然非 ERC20 標準之要求，而於諸多操作中需要此資訊之檢查
 
 ```
 function totalSupply () public view returns (uint256);
@@ -384,7 +390,7 @@ function approve(address spender, uint256 value) public returns (bool) {
 - `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
 - `increaseAllowance(address,uint256)` 可直接增加 `allowance`
 - `decreaseAllowance(address,uint256)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
-- `spendableAllowance(address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
+- `spendableAllowance(address,address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
 
@@ -541,7 +547,7 @@ transferAndCall(
   "0xae77c23700000000000000000000000083b21dbd0e60b9709d647de183f5ae0c31b54c2a0000000000000000000000000000000000000000000000056bc75e2d63100000");
 ```
 
-或者擺隨意的 bytes 在後面，但 signature 不能影響到 ( ```"0x" + keccak256("purchase(uint256,address)")[0~7]``` = `0xae77c237` )
+或者擺隨意的 bytes 在後面，但 signature 不能影響到 ( `"0x" + keccak256("purchase(uint256,address)")[0~7]` = `0xae77c237` )
 
 ```
 transferAndCall(
@@ -558,14 +564,14 @@ transferAndCall(
 
 在上述的 `Instrument` 結構中的 `DirectDebit` 中:
 
- - `DirectDebitInfo info` 為直接扣款資訊
- - `uint256 epoch` 為紀錄已經被扣款過的期數
+- `DirectDebitInfo info` 為直接扣款資訊
+- `uint256 epoch` 為紀錄已經被扣款過的期數
 
 在 `DirectDebitInfo` 中:
 
- - `uint256 amount` 為每期的允許扣款額度
- - `uint256 startTime` 為允許的開始扣款時間
- - `uint256 interval` 為每期的週期間隔時間
+- `uint256 amount` 為每期的允許扣款額度
+- `uint256 startTime` 為允許的開始扣款時間
+- `uint256 interval` 為每期的週期間隔時間
 
 ```
 struct DirectDebit {
@@ -598,8 +604,8 @@ function setDirectDebit(bool directDebit) public {
 
 設定直接扣款的操作中:
 
- - `SetupDirectDebit(address,address,(uint256,uint256,uint256))` 為當一個代幣擁有者對某個位址設定了允許直接扣款時，所發射的事件
- - `setupDirectDebit(address,(uint256,uint256,uint256))` 為代幣擁有者允許某個位址定期直接扣款的操作
+- `SetupDirectDebit(address,address,(uint256,uint256,uint256))` 為當一個代幣擁有者對某個位址設定了允許直接扣款時，所發射的事件
+- `setupDirectDebit(address,(uint256,uint256,uint256))` 為代幣擁有者允許某個位址定期直接扣款的操作
 
 ```
 event SetupDirectDebit(address indexed debtor, address indexed receiver, DirectDebitInfo info);
@@ -623,7 +629,7 @@ function setupDirectDebit(
 
 要檢查直接扣款相關設定時:
 
- - `directDebit(address,address)` 為查看直接扣款資訊的操作
+- `directDebit(address,address)` 為查看直接扣款資訊的操作
 
 ```
 function directDebit(address debtor, address receiver) public view returns (DirectDebit) {
@@ -645,7 +651,7 @@ function directDebit(address debtor, address receiver) public view returns (Dire
 
 扣款方在直接扣款的操作中:
 
- - `withdrawDirectDebit(address)` 為扣款方指定被扣款方並進行扣款的操作，並會觸發 `Transfer(address,address,uint256)`  事件
+- `withdrawDirectDebit(address)` 為扣款方指定被扣款方並進行扣款的操作，並會觸發 `Transfer(address,address,uint256)` 事件
 
 ```
 function withdrawDirectDebit(address debtor) public returns (bool) {
@@ -656,23 +662,23 @@ function withdrawDirectDebit(address debtor) public returns (bool) {
 
   uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
   uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
-  
+
   require(amount > 0);
-  
+
   debtorAccount.balance = debtorAccount.balance.sub(amount);
   accounts[msg.sender].balance += amount;
   debit.epoch = epoch;
 
   emit Transfer(debtor, msg.sender, amount);
-  
+
   return true;
 }
 ```
 
 一旦代幣擁有者想要撤銷某個地址的定期直接扣款，則直接將 `directDebit` 移除即可
 
- - `TerminateDirectDebit(address,address)` 為代幣擁有者撤銷直接扣款權力時所發射的事件，透過 `terminateDirectDebit(address)` 觸發
- - `terminateDirectDebit(address)` 為代幣擁有者撤銷直接扣款時的操作
+- `TerminateDirectDebit(address,address)` 為代幣擁有者撤銷直接扣款權力時所發射的事件，透過 `terminateDirectDebit(address)` 觸發
+- `terminateDirectDebit(address)` 為代幣擁有者撤銷直接扣款時的操作
 
 ```
 event TerminateDirectDebit(address indexed debtor, address indexed receiver);
@@ -690,8 +696,8 @@ function terminateDirectDebit(address receiver) public returns (bool) {
 
 一次性的多個傳輸代幣
 
- - `transfer(uint256[])` 為一次性傳輸代幣給多個對象時所作的操作
- - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
+- `transfer(uint256[])` 為一次性傳輸代幣給多個對象時所作的操作
+- `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
 
 為減少所需要帶上的參數，我們將接收者位址 (receviers) 跟 代幣傳輸量 (values) 合在了一起，在一個 32 bytes 的 `uint256` 數字裡面就能紀錄接收者地址與代幣傳輸量
 
@@ -724,8 +730,8 @@ function transfer(uint256[] data) public returns (bool) {
 
 一次性的多個直接扣款
 
- - `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
- - `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
+- `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
+- `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
 
 `strict` 為 `true` 表示當其中一個人直接扣款失敗時，整個操作都會失敗，並 `revert()`
 
@@ -747,12 +753,12 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
     address debtor = debtors[i];
     Account storage debtorAccount = accounts[debtor];
     DirectDebit storage debit = debtorAccount.instruments[msg.sender].directDebit;
-    
+
     uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
     uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
-    
+
     require(amount > 0);
-    
+
     uint256 debtorBalance = debtorAccount.balance;
 
     if (amount > debtorBalance) {
@@ -778,23 +784,23 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 
 在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
- - `uint256 nonce` 代表此被委派的傳輸是第幾個傳輸，這是為了防止雙花攻擊
- - `uint256 fee` 代表代幣傳送者 (Token transfer origin) 願意給轉發者 (Relayer) 多少代幣當作手續費
- - `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量，使轉發者可以事先檢查並且不受浪費攻擊
- - `address to` 代表代幣傳輸的接收者地址，可以為智能合約地址
- - `uint256 value` 代幣傳輸量，與 `transfer(address,uint256)` 中的 `value` 的意義一樣
- - `bytes data` 與 `transferAndCall(address,uint256,bytes)` 中的 `data` 的意義一樣
- - `DelegateMode mode` 代表為代幣傳送者想要指定轉發者及指定誰可收取 `fee` 的委派模式
- - `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
- - `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
- - `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
+- `uint256 nonce` 代表此被委派的傳輸是第幾個傳輸，這是為了防止雙花攻擊
+- `uint256 fee` 代表代幣傳送者 (Token transfer origin) 願意給轉發者 (Relayer) 多少代幣當作手續費
+- `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量，使轉發者可以事先檢查並且不受浪費攻擊
+- `address to` 代表代幣傳輸的接收者地址，可以為智能合約地址
+- `uint256 value` 代幣傳輸量，與 `transfer(address,uint256)` 中的 `value` 的意義一樣
+- `bytes data` 與 `transferAndCall(address,uint256,bytes)` 中的 `data` 的意義一樣
+- `DelegateMode mode` 代表為代幣傳送者想要指定轉發者及指定誰可收取 `fee` 的委派模式
+- `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
+- `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
+- `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
 
 `DelegateMode` 則有以下幾種:
 
- - `PublicMsgSender` 代表是任何人都可以是轉發者，並且`fee` 是將給 `msg.sender` 
- - `PublicTxOrigin` 代表是任何人都可以是轉發者，並且`fee` 是將給 `tx.origin` 
- - `PrivateMsgSender` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `msg.sender` 
- - `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `tx.origin` 
+- `PublicMsgSender` 代表是任何人都可以是轉發者，並且`fee` 是將給 `msg.sender`
+- `PublicTxOrigin` 代表是任何人都可以是轉發者，並且`fee` 是將給 `tx.origin`
+- `PrivateMsgSender` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `msg.sender`
+- `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `tx.origin`
 
 <details><summary>DelegateTransferAndCall Soucre Code</summary>
 
@@ -896,8 +902,6 @@ function delegateTransferAndCall(
 ## Rationale
 
 <!--The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.-->
-
-The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.-->
 
 ## Backwards Compatibility
 
