@@ -693,7 +693,7 @@ function terminateDirectDebit(address receiver) public returns (bool) {
 
 #### 一次性大量操作:
 
-**一次性的多個傳輸代幣**
+#### 一次性的多個傳輸代幣
 
 - `transfer(uint256[])` 為一次性傳輸代幣給多個對象時所作的操作
 - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
@@ -727,7 +727,7 @@ function transfer(uint256[] data) public returns (bool) {
 
 ---
 
-**一次性的多個直接扣款**
+#### 一次性的多個直接扣款
 
 - `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
 - `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
@@ -901,8 +901,6 @@ function delegateTransferAndCall(
 </details>
 
 ---
-
-**nonce 相關**
 
 查看 nonce:
 
