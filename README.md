@@ -57,10 +57,8 @@ ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被�
     (EA) ---[approve]-> (CA)
     (EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
 
-> EA 是 External Account
->
-> CA 是 Contract Account
->
+> EA 是 External Account  
+> CA 是 Contract Account  
 > A 是 EA and CA
 
 絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行，甚至可能被其他智能合約攻擊，藉由故意消耗原意以外的 `allowance` 的方式。
@@ -694,7 +692,7 @@ function terminateDirectDebit(address receiver) public returns (bool) {
 
 #### 一次性大量操作
 
-一次性的多個傳輸代幣
+**一次性的多個傳輸代幣**
 
 - `transfer(uint256[])` 為一次性傳輸代幣給多個對象時所作的操作
 - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
@@ -728,7 +726,7 @@ function transfer(uint256[] data) public returns (bool) {
 
 ---
 
-一次性的多個直接扣款
+**一次性的多個直接扣款**
 
 - `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
 - `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
@@ -782,6 +780,8 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 
 #### 代幣傳送委派、代幣轉發
 
+此為代幣化關鍵的一個介面，讓代幣的傳輸不再需要以太幣當作手續費，而是以也付代幣當作手續費的轉變
+
 在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
 - `uint256 nonce` 代表此被委派的傳輸是第幾個傳輸，這是為了防止雙花攻擊
@@ -794,6 +794,8 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 - `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
 - `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
 - `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
+
+代幣傳送者需要在鏈下先編織好以上的資訊並且簽署才能將參數們交給轉發者，鏈外部份的實作將會以參考的方式補充進來，而非有硬性要求
 
 `DelegateMode` 則有以下幾種:
 
@@ -898,6 +900,31 @@ function delegateTransferAndCall(
 </details>
 
 ---
+
+**nonce 相關**
+
+查看 nonce:
+
+ - `nonceOf(address)` 可查找任何帳戶的 nonce
+
+```
+function nonceOf(address owner) public view returns (uint256) {
+  return accounts[owner].nonce;
+}
+```
+
+而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救，故須 nonce 方面的操作
+
+ - `IncreaseNonce(address,uint256)` 為 nonce 增加時所發射的事件，唯有 `delegateTransferAndCall()` 與 `increaseNonce()` 觸發
+ - `increaseNonce()` 為代幣傳送者手動增加 nonce 之操作
+
+```
+event IncreaseNonce(address indexed from, uint256 nonce);
+
+function increaseNonce() public returns (bool) {
+  emit IncreaseNonce(msg.sender, accounts[msg.sender].nonce += 1);
+}
+```
 
 ## Rationale
 
