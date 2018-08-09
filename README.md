@@ -458,11 +458,11 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 為了讓傳輸代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
 
-在 `transferAndCall` 中
+在 `transferAndCall` 的參數中
 
-- `to` 為接收者智能合約的位址
-- `value` 為代幣傳輸量，與 `transfer` 的一樣意義
-- `data` 為後續所有連續動作都需要的參數資料，與 `receiverContractAddress.call(data)` 搭配使用，`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
+- `address to` 為接收者智能合約的位址
+- `uint256 value` 為代幣傳輸量，與 `transfer` 的一樣意義
+- `bytes data` 為後續所有連續動作都需要的參數資料，與 `receiverContractAddress.call(data)` 搭配使用，`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
 
 並且因為 `data` 最少要包含要傳遞給接收者智能合約的資料，故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
 
