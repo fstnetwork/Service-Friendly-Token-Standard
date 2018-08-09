@@ -468,7 +468,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 - `to` 為接收者智能合約的位址
 - `value` 為代幣傳輸量，與 `transfer` 的一樣意義
-- `data` 為後續所有連續動作都需要的參數資料，與 `Address.call(data)` 搭配使用，其中應內含 `value` 與 `msg.sender`
+- `data` 為後續所有連續動作都需要的參數資料，與 `receiverContractAddress.call(data)` 搭配使用，`data` 其中應內含 `value` 與 `msg.sender`
 
 因為 `data` 最少要包含要傳遞給接收者智能合約的資料，故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
 
