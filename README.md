@@ -100,7 +100,7 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 
 #### 對於 `address` 與 `uint256` 的延伸
 
-<details><summary>AddressExtension</summary>
+<details><summary>AddressExtension Soucre Code</summary>
 
 ```
 pragma solidity ^0.4.24;
@@ -132,7 +132,7 @@ library AddressExtension {
 
 </details>
 
-<details><summary>Math</summary>
+<details><summary>Math Soucre Code</summary>
 
 ```
 pragma solidity ^0.4.24;
@@ -386,7 +386,7 @@ function approve(address spender, uint256 value) public returns (bool) {
 - `decreaseAllowance(address,uint256)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
 - `spendableAllowance(address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
-<details><summary>Secure ERC20 (安全版 ERC20)</summary>
+<details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
 
 ```
 bool public erc20ApproveChecking;
@@ -776,7 +776,120 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 
 #### 代幣傳送委派、代幣轉發
 
+在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
+ - `uint256 nonce` 代表此被委派的傳輸是第幾個傳輸，這是為了防止雙花攻擊
+ - `uint256 fee` 代表代幣傳送者 (Token transfer origin) 願意給轉發者 (Relayer) 多少代幣當作手續費
+ - `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量，使轉發者可以事先檢查並且不受浪費攻擊
+ - `address to` 代表代幣傳輸的接收者地址，可以為智能合約地址
+ - `uint256 value` 代幣傳輸量，與 `transfer(address,uint256)` 中的 `value` 的意義一樣
+ - `bytes data` 與 `transferAndCall(address,uint256,bytes)` 中的 `data` 的意義一樣
+ - `DelegateMode mode` 代表為代幣傳送者想要指定轉發者及指定誰可收取 `fee` 的委派模式
+ - `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
+ - `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
+ - `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
+
+`DelegateMode` 則有以下幾種:
+
+ - `PublicMsgSender` 代表是任何人都可以是轉發者，並且`fee` 是將給 `msg.sender` 
+ - `PublicTxOrigin` 代表是任何人都可以是轉發者，並且`fee` 是將給 `tx.origin` 
+ - `PrivateMsgSender` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `msg.sender` 
+ - `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `tx.origin` 
+
+<details><summary>DelegateTransferAndCall Soucre Code</summary>
+
+```
+function delegateTransferAndCall(
+  uint256 nonce,
+  uint256 fee,
+  uint256 gasAmount,
+  address to,
+  uint256 value,
+  bytes data,
+  DelegateMode mode,
+  uint8 v,
+  bytes32 r,
+  bytes32 s
+)
+  public
+  returns (bool)
+{
+  require(isDelegateEnable);
+
+  require(to != address(this));
+  address signer;
+  address relayer;
+  if (mode == DelegateMode.PublicMsgSender) {
+    signer = ecrecover(
+      keccak256(abi.encodePacked(this, nonce, fee, gasAmount, to, value, data, mode, address(0))),
+      v,
+      r,
+      s
+    );
+    relayer = msg.sender;
+  } else if (mode == DelegateMode.PublicTxOrigin) {
+    signer = ecrecover(
+      keccak256(abi.encodePacked(this, nonce, fee, gasAmount, to, value, data, mode, address(0))),
+      v,
+      r,
+      s
+    );
+    relayer = tx.origin;
+  } else if (mode == DelegateMode.PrivateMsgSender) {
+    signer = ecrecover(
+      keccak256(abi.encodePacked(this, nonce, fee, gasAmount, to, value, data, mode, msg.sender)),
+      v,
+      r,
+      s
+    );
+    relayer = msg.sender;
+  } else if (mode == DelegateMode.PrivateTxOrigin) {
+    signer = ecrecover(
+      keccak256(abi.encodePacked(this, nonce, fee, gasAmount, to, value, data, mode, tx.origin)),
+      v,
+      r,
+      s
+    );
+    relayer = tx.origin;
+  } else {
+    revert();
+  }
+
+  Account storage signerAccount = accounts[signer];
+  // nonce
+  require(nonce == signerAccount.nonce);
+  emit IncreaseNonce(signer, signerAccount.nonce += 1);
+
+  // guarded by Math
+  signerAccount.balance = signerAccount.balance.sub(value.add(fee));
+  // guarded by totalSupply
+  accounts[to].balance += value;
+  // guarded by totalSupply
+  if (fee != 0) {
+    accounts[relayer].balance += fee;
+    emit Transfer(signer, relayer, fee);
+  }
+
+  if (!to.isAccount() && data.length >= 68) {
+    assembly {
+      mstore(add(data, 36), value)  // 32 (length) + 4 (signature)
+      mstore(add(data, 68), signer) // 32 (length) + 4 (signature) + 32 (1st arg)
+    }
+    if (to.call.gas(gasAmount)(data)) {
+      emit Transfer(signer, to, value);
+    } else {
+      signerAccount.balance += value;
+      accounts[to].balance -= value;
+    }
+  } else {
+    emit Transfer(signer, to, value);
+  }
+
+  return true;
+}
+```
+
+</details>
 
 ---
 
