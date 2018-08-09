@@ -472,7 +472,11 @@ function spendableAllowance(address owner, address spender) public view returns 
 - 檢查 `data` 的長度需大於等於 68 bytes
 - 檢查確定代幣傳輸已經完成
 
-以及對於 data 的前兩個參數進行強制覆蓋，讓 `data` 中必定是 **[4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]**
+以及對於 data 的前兩個參數進行強制覆蓋，讓 `data` 中必定是
+
+```
+[4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]
+```
 
 故意讓 `value` 先而 `sender` 後的原因為，不與 `to` `value` 的組合順序搞混
 
