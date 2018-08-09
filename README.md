@@ -585,6 +585,8 @@ struct DirectDebitInfo {
 }
 ```
 
+---
+
 直接扣款也是一個可以開啟或關閉的功能:
 
 - `bool isDirectDebitEnable` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
@@ -626,6 +628,8 @@ function setupDirectDebit(
 }
 ```
 
+---
+
 要檢查直接扣款相關設定時:
 
 - `directDebit(address,address)` 為查看直接扣款資訊的操作
@@ -647,6 +651,8 @@ function directDebit(address debtor, address receiver) public view returns (Dire
 假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 ~ N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
 
 而假如扣款方的第一次扣款在 2019-01-05T08:08:08.000Z (S+4days) 這一瞬間，則一次可以扣款到 60 token，等於滿足到了 epoch 3，下次扣款只能在最早 2019-01-07T08:08:08.000Z (S+6days) 之後，也就是 epoch 4
+
+---
 
 扣款方在直接扣款的操作中:
 
@@ -673,6 +679,8 @@ function withdrawDirectDebit(address debtor) public returns (bool) {
   return true;
 }
 ```
+
+---
 
 一旦代幣擁有者想要撤銷某個地址的定期直接扣款，則直接將 `directDebit` 移除即可
 
@@ -929,7 +937,7 @@ function increaseNonce() public returns (bool) {
 
 <!--The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.-->
 
-
+#### 
 
 ## Backwards Compatibility
 
