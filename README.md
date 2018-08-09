@@ -2,7 +2,7 @@
 eip: <to be assigned>
 title: Service-Friendly Token Standard
 author:
-  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930)
+  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930), Jack Chu <jack@fstk.io>, Leo Chou <leo@fstk.io>, Darren Goh <darren@fstk.io>
 discussions-to: <URL>
 status: Draft
 type: Standard
@@ -1032,7 +1032,7 @@ function increaseNonce() public returns (bool) {
 
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
-經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試
+經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試  
 原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/ServiceFriendlyToken.sol
 
 ## Implementation
