@@ -6,7 +6,7 @@ discussions-to: <URL>
 status: Draft
 type: Standard
 category: ERC
-created: 2018-07-31
+created: 2018-08-08
 requires: ERC-20
 ---
 
