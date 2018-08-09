@@ -697,7 +697,7 @@ function terminateDirectDebit(address receiver) public returns (bool) {
 
 只不過 12 bytes 能紀錄的量對於 decimals = 18 的代幣而言，就不能傳太過於大的數字了，但至少對每個接收者也有 79,228,162,514.264337593543950335 個代幣可傳 (已經經過了 decimals 的處理以便人類理解))，以一個健康的代幣而言已經超越總代幣發行量，也就是 `0xffffffffffffffffffffffff / (10 ** 18)`
 
-並且為了正確顯示在區塊鏈瀏覽器上，必須每個 `Transfer(address,address,value)` 事件都要射出，然後也為了優化 storage 的讀寫，最後才會將所花上的餘額寫入代幣擁有者的餘額中
+並且為了正確顯示在區塊鏈瀏覽器上，必須每個 `Transfer(address,address,uint256)` 事件都要射出，然後也為了優化 storage 的讀寫，最後才會將所花上的餘額寫入代幣擁有者的餘額中
 
 ```
 function transfer(uint256[] data) public returns (bool) {
@@ -729,9 +729,9 @@ function transfer(uint256[] data) public returns (bool) {
 
 `strict` 為 `true` 表示當其中一個人直接扣款失敗時，整個操作都會失敗，並 `revert()`
 
-如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，方便鏈外環境可以偵測問題
+如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，而不中斷面向其他帳戶的直接扣款，方便鏈外環境可以偵測問題
 
-並且為了正確顯示在區塊鏈瀏覽器上，任何成功的直接扣款都必須發射 `Transfer(address,address,value)` 事件
+並且為了正確顯示在區塊鏈瀏覽器上，任何成功的直接扣款都必須發射 `Transfer(address,address,uint256)` 事件
 
 ```
 event WithdrawDirectDebitFailure(address indexed debtor, address indexed receiver);
