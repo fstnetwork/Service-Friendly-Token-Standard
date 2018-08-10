@@ -1,6 +1,6 @@
 ---
 eip: <to be assigned>
-title: Basic Service-Friendly Token Standard
+title: Service-Friendly Token Standard
 author: Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930), Jack Chu <jack@fstk.io>, Leo Chou <leo@fstk.io>, Darren Goh <darren@fstk.io>
 discussions-to: <URL>
 status: Draft
@@ -10,7 +10,7 @@ created: 2018-08-08
 requires: 20
 ---
 
-# Basic Service-Friendly Token Standard
+# Service-Friendly Token Standard
 
 ## Simple Summary
 
