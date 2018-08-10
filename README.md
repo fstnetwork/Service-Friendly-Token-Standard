@@ -1,8 +1,7 @@
 ---
 eip: <to be assigned>
 title: Service-Friendly Token Standard
-author:
-  Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930), Jack Chu <jack@fstk.io>, Leo Chou <leo@fstk.io>, Darren Goh <darren@fstk.io>
+author: Atkins Chang <atkins@fstk.io> (@AtkinsChang), Noel Bao <noel@fstk.io> (@noeleon930), Jack Chu <jack@fstk.io>, Leo Chou <leo@fstk.io>, Darren Goh <darren@fstk.io>
 discussions-to: <URL>
 status: Draft
 type: Standard
@@ -26,7 +25,7 @@ requires: 20
 
 原本專注於群眾募資的代幣技術與市場，遭遇到了即將要轉型成實用型 (Utility Token) 的陣痛期，非常多的專案或企業遇到了代幣的智能合約功能不足的問題，難以支撐基本的商業模式並應用於更多現實世界的服務或產品。
 
-以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 上常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
+以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 時常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
 
 以及 FundersToken 原創的代幣傳送轉發 (Token transfer relay)，為代幣以智能合約的方式模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
 
@@ -43,6 +42,8 @@ requires: 20
 ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被證明是一個可行的方向，但其中因著不同的實作方式，執行時所耗的燃料成本與數學上的安全性，就造成不少代幣遭遇到了濫用或服務停擺。
 
 我們針對 `transfer` 與 `approve` 的實作方式進行了執行時間的優化與嚴格的數學檢查，以及如何儲存 `balance` 與 `allowance` 進行了小量規範。
+
+---
 
 關於何謂服務友善的環境，我們可以簡單地從金流與智能合約一開始的設計目的出發。
 
@@ -63,7 +64,7 @@ ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被�
 
 絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行，甚至可能被其他智能合約攻擊，藉由故意消耗原意以外的 `allowance` 的方式。
 
-從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊的 transaction 執行流程，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
+從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊交易執行流程，也就是傳送以太坊交易的對象是代幣智能合約而非接收者，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
 
 也因為代幣的帳本 (Ledger) 就在代幣的智能合約中，帳本裡數字的變化操作就也要被包在代幣智能合約裡，或者是驗證外部智能合約的邏輯使帳本的數字能被調動，但前者會讓代幣開發緩慢，而後者會讓執行成本升高與安全性風險增高。
 
@@ -72,27 +73,31 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 ```
 (EA) --[transfer and call]-> (CA 1)
      --[transfer and call]-> (CA 2)
-     --[transfer and call]-> ...
+     --[transfer and call]-> (CA 3)
+     ...
+     ...
      --[transfer and call]-> (A)
 ```
 
 簡單來說，我們希望代幣的金流或業務流程可以像是以太坊原本的方式一樣自然，並且讓代幣相關的服務開發起來是簡單直覺的，而非受了太多 ERC-20 沒有解決到的阻礙，造成業務擴展受到影響。
 
-為了達成這些目的，我們針對 ERC-223 或 ERC-827 的 `transferAndCall` 的實作方法與潛在威脅進行了優化與增強，其中，讓 `receiverContract` 也就是服務型智能合約 (Service contract) 收到正確的代幣傳送數字 (Value) 與正確的代幣傳送者 (Transfer sender)，讓 `receiverContract` 不會攻擊代幣傳送者，詳細會在下面補充。
+為了達成這些目的，我們針對 ERC-223 或 ERC-827 的 `transferAndCall` 的實作方法與潛在威脅進行了優化與增強，其中，讓 `receiverContract` 也就是服務型智能合約 (Service contract) 收到正確的代幣傳送數字 (Value) 與正確的代幣傳送者 (Token transfer sender)，讓 `receiverContract` 不會攻擊代幣傳送者，詳細會在下面補充。
 
 更進一步地說，以上不只是讓多個服務型智能合約的連接彈性與一致性獲得相當良好的提昇，讓智能合約間的業務流程模組化，並可以自由、信任地連接。這也使與鏈下接合 API 時，讓業務流程得到一次完整的一致性操作，大幅降低鏈下的狀態檢查或業務流程的影響，提高了更多鏈外開發者的導入意願度。
 
-對於代幣化所做的再補強，是基於了服務友善化之後，進一步移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙，有以下兩種：
+---
+
+對於代幣化所做的再補強，是基於了服務友善化之後，進一步移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙，有以下三種：
 
 1.  使代幣支援週期性的被動操作，例如定期直接扣款，就像是每月自動繳付信用卡費用一般
 2.  使代幣支援一次性大量操作
 3.  使代幣在被操作時，終端使用者不用負擔以太坊手續費
 
-目前，被動操作在代幣上的實現方式為 `approve` 一個對象，使這個對象可以自行依照 `allowance` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
+目前，被動操作在代幣上的實現方式為 `approve` 一個對象 (`spender`)，使這個被允許對象可以自行依照 `allowance` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
 
 最後我們談到，目前以太坊上的代幣環境受到最大阻力的一個技術性原因，就是當終端使用者在傳送代幣時，要支付以太幣當作手續費。這件事情的脈落若是以太坊身為一個去中心計算平台、金流平台，執行智能合約時支付燃料來穩定網路、回饋挖礦者或驗證者，無不合理而且大家都贊同。但以代幣終端使用者角度而言，這件事情就變得非常不正確，「沒有以太幣則無法使用代幣服務」的限制，讓代幣環境遭受到最大的「代幣化」阻礙。
 
-所以我們規範並實作了讓「代幣傳送者」簽署出特別的代幣傳送請求，讓「轉發者」可以檢查其中的代幣傳送費、簽章，然後幫忙轉發此請求至代幣合約，也就是轉發者幫忙支付了以太坊燃料費，代幣合約將檢查並履行其中的代幣傳送。此外，我們也避免代幣傳送者攻擊轉發者，或者是轉發者攻擊代幣傳送者。
+所以我們規範並實作了讓「代幣傳送者」簽署出特別的代幣傳送請求，讓「轉發者」可以檢查其中的代幣傳送費、簽章，然後幫忙轉發此請求，傳送以太坊交易至代幣合約，也就是轉發者幫忙支付了以太坊燃料費，代幣合約將檢查並履行其中的代幣傳送。此外，我們也避免代幣傳送者攻擊轉發者，或者是反過來轉發者攻擊代幣傳送者。
 
 因著以上動機所做出的介面標準或實作，請參考下一個部份。
 
@@ -103,6 +108,8 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 ### ERC-20 補強
 
 #### 對於 `address` 與 `uint256` 的延伸:
+
+我們對於我們所使用的 `address` 型態與 `uint256` 型態進行了延伸
 
 <details><summary>AddressExtension Soucre Code</summary>
 
@@ -264,7 +271,7 @@ uint8 public constant decimals;
 在 `Instrument` 中
 
 - `uint256 allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
-- `DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的額度設定，`DirectDebit` 的部份在後面將會說明
+- `DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的相關資訊，`DirectDebit` 的部份在後面將會說明
 
 ```
 struct Instrument {
@@ -377,7 +384,7 @@ function approve(address spender, uint256 value) public returns (bool) {
 
 `approve(address,uint256)` 中的 `erc20ApproveChecking` 請見下一個部份。
 
-而當 `erc20ApproveChecking` 開啟時，此 `approve` 中會額外做的檢查為，檢查 `spender` 目前的 `allowance` 是否為 0，以防 spender 插隊攻擊代幣擁有者。
+而當 `erc20ApproveChecking` 為 `true` 時，此 `approve(address,uint256)` 中會額外做檢查，檢查 `spender` 目前的 `allowance` 是否為 0，以防 spender 插隊攻擊代幣擁有者。
 
 ---
 
@@ -387,7 +394,7 @@ function approve(address spender, uint256 value) public returns (bool) {
 - `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件，需要透過 `setERC20ApproveChecking(bool)` 引發
 - `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
 - `increaseAllowance(address,uint256)` 可直接增加 `allowance`
-- `decreaseAllowance(address,uint256)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+- `decreaseAllowance(address,uint256,bool)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
 - `spendableAllowance(address,address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
@@ -471,7 +478,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 - `address to` 為接收者智能合約的位址
 - `uint256 value` 為代幣傳送量，與 `transfer` 的一樣意義
-- `bytes data` 為後續所有連續動作都需要的參數資料，與 `receiverContractAddress.call(data)` 搭配使用，`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
+- `bytes data` 為後續所有連續動作都需要的參數資料，與 `to.call(data)` 搭配使用，`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
 
 並且因為 `data` 最少要包含要傳遞給接收者智能合約的資料，故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
 
@@ -487,7 +494,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 [4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]
 ```
 
-故意讓 `value` 先而 `sender` 後的原因為，不與 `to` `value` 的組合順序搞混
+故意讓 `uint256 value` 先而 `address sender` (`address from`) 後的原因為，不與 `address to` + `uint256 value` 的組合順序搞混
 
 ```
 // Token Contract (TokenA, decimals = 18)
@@ -537,7 +544,7 @@ function purchase(
 
 所以要使終端使用者可以用 100 TokenA 購買 TokenB 時，只要能編碼下列 tx input，簽署並送出即可
 
-假設 `msg.sender` (from) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
+假設 `msg.sender` (`from`) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
 
 ```
 transferAndCall(
@@ -569,8 +576,8 @@ transferAndCall(
 在 `DirectDebitInfo` 中:
 
 - `uint256 amount` 為每期的允許扣款額度
-- `uint256 startTime` 為允許的開始扣款時間
-- `uint256 interval` 為每期的週期間隔時間
+- `uint256 startTime` 為允許的開始扣款時間，單位為秒 (Unix Epoch)
+- `uint256 interval` 為每期的週期間隔時間，單位為秒
 
 ```
 struct DirectDebit {
@@ -589,7 +596,7 @@ struct DirectDebitInfo {
 
 直接扣款也是一個可以開啟或關閉的功能:
 
-- `bool isDirectDebitEnable` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
+- `bool isDirectDebitEnable` 為一個狀態值紀錄是否要開啟直接扣款功能，預設為 `false`，只有 `issuer` 才能更動
 - `SetDirectDebit(bool)` 為 `isDirectDebitEnable` 改變時會發射的事件，需要透過 `setDirectDebit(bool)` 引發
 
 ```
@@ -640,7 +647,7 @@ function directDebit(address debtor, address receiver) public view returns (Dire
 }
 ```
 
-例如設定了每期 10 代幣，開始時間為 2019-01-01T08:08:08.000Z，每期間隔為 2 天
+例如設定了每期 10 代幣，開始時間為 `2019-01-01T08:08:08.000Z`，每期間隔為 2 天
 
 ```
  |     epoch 1     |     epoch 2     |     epoch 3     |     epoch 4     |
@@ -650,7 +657,7 @@ function directDebit(address debtor, address receiver) public view returns (Dire
 
 假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 ~ N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
 
-而假如扣款方的第一次扣款在 2019-01-05T08:08:08.000Z (S+4days) 這一瞬間，則一次可以扣款到 60 token，等於滿足到了 epoch 3，下次扣款只能在最早 2019-01-07T08:08:08.000Z (S+6days) 之後，也就是 epoch 4
+而假如扣款方的第一次扣款在 `2019-01-05T08:08:08.000Z` (S+4days) 這一瞬間，則一次可以扣款到 30 token，等於滿足到了 epoch 3，下次扣款只能在最早 `2019-01-07T08:08:08.000Z` (S+6days) 之後，也就是 epoch 4
 
 ---
 
@@ -742,8 +749,7 @@ function transfer(uint256[] data) public returns (bool) {
 
 `strict` 為 `true` 表示當其中一個人直接扣款失敗時，整個操作都會失敗，並 `revert()`
 
-如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，而不中斷面向其他帳戶的直接扣款，方便鏈外環境可以偵測問題
-
+如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，而不中斷面向其他帳戶的直接扣款，方便鏈外環境可以偵測問題，  
 並且為了正確顯示在區塊鏈瀏覽器上，任何成功的直接扣款都必須發射 `Transfer(address,address,uint256)` 事件
 
 ```
@@ -793,7 +799,7 @@ function withdrawDirectDebit(address[] debtors, bool strict) public returns (boo
 
 代幣轉發也是一個可以開啟或關閉的功能:
 
-- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
+- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟代幣轉發功能，預設為 `false`，只有 `issuer` 才能更動
 - `SetDelegate(bool)` 為 `isDelegateEnable` 改變時會發射的事件，需要透過 `setDelegate(bool)` 引發
 
 ```
@@ -823,6 +829,26 @@ function setDelegate(bool delegate) public {
 - `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
 
 代幣傳送者需要在鏈下先編織好以上的資訊並且簽署才能將參數們交給轉發者，鏈外部份的實作將會以參考的方式補充進來，而非有硬性要求
+
+資料的簽署方法為
+
+```
+ECDSA_Sign(
+  keccak256(
+    abi.encodePacked(
+      tokenAddress,
+      nonce,
+      fee,
+      gasAmount,
+      to,
+      value,
+      data,
+      mode,
+      relayerAddress (or 0)
+    )
+  )
+)
+```
 
 `DelegateMode` 則有以下幾種:
 
@@ -961,7 +987,7 @@ function increaseNonce() public returns (bool) {
 
 因為 ERC-20 只規範了介面標準，而缺乏實作方面的建議，我們把從頭實作 ERC-20 時發現的問題融入了這標準裡，我們認為對於終端使用者或企業使用者而言，降低成本與邏輯明確是必要的，故做了不少儲存時的優化。例如跟帳戶有關的就是一個 `accounts` 的映射表，讀取結構 (struct) 的位址並且拿出需要的資料們，總比讀取自數個映射表還來的輕量。
 
-而關於增強安全用的部份，主要是針對 `spender` 會插隊攻擊代幣擁有者在指定新 `allowance` 的時，如果沒有特別檢查，從 1,000 指定至 500 的 `allowance` 的過程中，插隊攻擊就會先把 1,000 花掉，然後讓代幣擁有者額外又 `approve` 了 500，**1,000 -> 0 -> 500**
+而關於增強安全用的部份，主要是針對 `spender` 會插隊攻擊代幣擁有者在指定新 `allowance` 的時，如果沒有特別檢查，從 1,000 指定至 500 的 `allowance` 的過程中，插隊攻擊就會先把 1,000 花掉，然後讓代幣擁有者額外又 `approve` 了 500，**1,000 -> 0 -> 500** 。
 
 故安全版的要求就會是 `approve` 一個新值前，至少在 ERC-20 的介面下是 `allowance` 必須先回到 0，雖然變得安全但變成要發送兩個以太坊交易了，我們更是建議使用有預想值 (`expectedValue`) 的那一個介面，畢竟 `increaseAllowance` 與 `decreaseAllowance` 也可能會被插隊攻擊。
 
@@ -998,8 +1024,9 @@ function increaseNonce() public returns (bool) {
 8. 目的地之一請求，多個來源，多個目的地
    > 同 **3.**，因為需要來源間的授權，搭配一次性的傳送給多個目的地的功能，即可達成
 
-最後，就是對於金流服務所做出的一個修正，也就是傳送代幣不應該花上以太幣，而即使 Account Abstraction 出來了之後，也會因只能服務提供者自行承擔以太坊成本而容易形成硬成本，造成商業擴張的困難。所以讓「自願者」能出來協助轉發交易才是首要重點。
+最後，就是對於金流服務所做出的一個修正，也就是傳送代幣不應該花上以太幣，而即使 **Account Abstraction** 出來了之後，也會因由服務提供者自行承擔以太坊成本而容易形成硬成本，造成商業擴張的困難。
 
+所以讓「自願者」能出來協助轉發交易才是首要重點。  
 自願者，也就是轉發者 (Relayer) 必須要能自行挑選正常、無錯的代幣傳送請求，並代為發送至鏈上，再讓智能合約檢查代幣傳送者指定了哪些事物，轉發者又做了哪些調整，要避免代幣傳送者攻擊轉發者，反之也要避免轉發者攻擊代幣傳送者。
 
 我們將攻擊模式與解決方式列出:
@@ -1009,18 +1036,17 @@ function increaseNonce() public returns (bool) {
 2. 轉發者將此代幣傳送請求送至另一個剛好 `nonce` 也對應好的代幣智能合約
    > 新增 `tokenAddress` 資料至簽章中的方式可以解決
 3. 代幣傳送者浪費轉發者的以太幣燃料費
-   > 新增 `gasAmount` 資料至簽章中，假如代幣傳送者給得太低，轉發者一開始就能知道，故可以先於鏈下捨棄此代幣傳送請求。
-   >
+   > 新增 `gasAmount` 資料至簽章中，假如代幣傳送者給得太低，轉發者一開始就能知道，故可以先於鏈下捨棄此代幣傳送請求。  
    > 也因為為了讓此類別攻擊徹底失效，轉發者無論如何都會送出可以得到 `fee` 的交易，故針對即使會失敗的代幣傳送請求也是會送出的，也就是說，代幣傳送者在編織代幣傳送請求前就應該要檢查好，也就能避免反過來代幣傳送者被浪費資源。就跟以太坊自己一樣。
 4. 轉發者故意以不足的以太幣燃料量拿到了 `fee` 但讓原有該做完的操作沒做完
-   > 新增 `gasAmount` 資料至簽章中，因為代幣傳送者自己定義了這個數字，故可解決，即使這個數字錯了，也可以用 **1.** 的方法，或也因為燃料不足時會交易失敗，故還是可以解決
+   > 新增 `gasAmount` 資料至簽章中，因為代幣傳送者自己定義了這個數字，故可解決，即使這個數字錯了，也可以用 **1.** 的方法，在最差的狀況，也會因為燃料不足時會交易失敗，故還是可以解決
 
 我們的實作都有將攻擊模式考慮於其中，故可確保是一個健康的代幣轉發模型。  
 此外，轉發者們彼此競爭，因著給出較高的以太坊燃料單價，就可以讓代幣傳送請求被驗證得更快，這就是為什麼我們十分重視 `fee` 與 `gasAmount` 的設計，因為公平的機制才能吸引轉發者們來轉發，賺取代幣，也讓代幣傳送者們享受到更快的交易驗證，雙贏。
 
 ### 總結
 
-此代幣介面標準是稍微龐大複雜的，但我們是以一個區塊 (blocksize) 還可以裝得下，並且可以提供大量的延伸性、擴展性的智能合約作為我們的目標，也希望這也是一個讓服務型智能合約，或是說實用型代幣 (Utility Token) 真正能落地的一個介面
+此代幣介面標準是稍微龐大複雜的，但我們是以一個區塊大小 (blocksize) 還可以裝得下，並且可以提供大量的延伸性、擴展性的智能合約作為我們的目標，也希望這也是一個讓服務型智能合約，或是說實用型代幣 (Utility Token) 真正能落地的一個介面
 
 ## Backwards Compatibility
 
