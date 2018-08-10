@@ -35,9 +35,9 @@ requires: 20
 
 我們將此介面標準中的功能們分成以下幾類:
 
-1.  針對 ERC-20 做的補強
-2.  針對服務友善的環境 (Service-Friendly) 所做出的補強
-3.  針對健全的代幣化所做出的補強
+1.  [針對 ERC-20 做的補強](#erc-20-補強)
+2.  [針對服務友善的環境 (Service-Friendly) 所做出的補強](#service-friendly-服務友善化-補強)
+3.  [針對健全的代幣化所做出的補強](#tokenisation-代幣化-補強)
 
 ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被證明是一個可行的方向，但其中因著不同的實作方式，執行時所耗的燃料成本與數學上的安全性，就造成不少代幣遭遇到了濫用或服務停擺。
 
@@ -103,6 +103,18 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 <!--The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Ethereum platforms (go-ethereum, parity, cpp-ethereum, ethereumj, ethereumjs, and [others](https://github.com/ethereum/wiki/wiki/Clients)).-->
 
 ### ERC-20 補強
+
+索引:
+
+1. [對於 `address` 與 `uint256` 的延伸](#對於-address-與-uint256-的延伸)
+2. [基本的代幣資訊，一開始就指定好並且是常數性的](#基本的代幣資訊一開始就指定好並且是常數性的)
+3. [優化過的儲存代幣擁有者的資訊，實作部份](#優化過的儲存代幣擁有者的資訊實作部份)
+4. [會變動的代幣資訊](#會變動的代幣資訊)
+5. [代幣事件](#代幣事件)
+6. [代幣的操作相關函數](#代幣的操作相關函數)
+7. [增強安全用代幣資訊、操作](#增強安全用代幣資訊操作)
+
+---
 
 #### 對於 `address` 與 `uint256` 的延伸:
 
@@ -468,6 +480,12 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 ### Service-Friendly (服務友善化) 補強
 
+索引:
+
+1. [Transfer and call (傳送呼叫)](#transfer-and-call-傳送呼叫)
+
+---
+
 #### Transfer and call (傳送呼叫):
 
 為了讓傳送代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
@@ -561,6 +579,13 @@ transferAndCall(
 ```
 
 ### Tokenisation (代幣化) 補強
+
+索引:
+
+1. [一次性多個傳送代幣](#一次性多個傳送代幣)
+2. [代幣傳送委派、代幣轉發](#代幣傳送委派代幣轉發)
+
+---
 
 #### 一次性多個傳送代幣
 
