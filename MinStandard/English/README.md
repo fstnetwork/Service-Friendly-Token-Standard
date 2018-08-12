@@ -33,36 +33,36 @@ And FundersToken's **Token transfer relay**, which simulates blockchains in the 
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-我們將此介面標準中的功能們分成以下幾類:
+We divide the functionalities in this interface standard into the following categories：
 
-1.  [針對 ERC-20 做的補強](#erc-20-補強)
-2.  [針對服務友善的環境 (Service-Friendly) 所做出的補強](#service-friendly-服務友善化-補強)
-3.  [針對健全的代幣化所做出的補強](#tokenisation-代幣化-補強)
+1.  [The improvements to ERC-20](#erc-20-補強)
+2.  [The improvements to make a Token service-friendly](#service-friendly-服務友善化-補強)
+3.  [The improvements in healthy tokenisation](#tokenisation-代幣化-補強)
 
-ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被證明是一個可行的方向，但其中因著不同的實作方式，執行時所耗的燃料成本與數學上的安全性，就造成不少代幣遭遇到了濫用或服務停擺。
+As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations, the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
 
-我們針對 `transfer` 與 `approve` 的實作方式進行了執行時間的優化與嚴格的數學檢查，以及如何儲存 `balance` 與 `allowance` 進行了小量規範。
+We did some optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` for a small specification.
 
 ---
 
-關於何謂服務友善的環境，我們可以簡單地從金流與智能合約一開始的設計目的出發。
+About what is a service-friendly environment, we can simply begin with the design goals of the payment flow and smart contracts.
 
-以太坊交易 (Transaction) 與金流的旅程:
+The journey of an Ethereum transaction and the payment flow:
 
     (EA) --[tx]-> (CA 1) --[msg]-> (CA 2) --[msg]-> ... --[msg]-> (A)
 
-而 ERC-20 交易與金流的旅程:
+And the ERC-20 one:
 
     (EA) --[transfer]-> (A)
-    或
+    OR
     (EA) ---[approve]-> (CA)
     (EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
 
-> EA 是 External Account  
-> CA 是 Contract Account  
-> A 是 EA and CA
+> EA represents External Account  
+> CA represents Contract Account  
+> A represents EA and CA
 
-絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行，甚至可能被其他智能合約攻擊，藉由故意消耗原意以外的 `allowance` 的方式。
+Most of the current Token standards are difficult to complete many continuous steps in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
 
 從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊交易執行流程，也就是傳送以太坊交易的對象是代幣智能合約而非接收者，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
 
