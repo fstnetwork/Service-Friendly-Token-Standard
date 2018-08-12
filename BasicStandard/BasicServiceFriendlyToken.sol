@@ -181,7 +181,7 @@ contract FsTKToken {
   ) public returns (bool);
 }
 
-contract BasicERC20Like is SecureERC20, FsTKToken {
+contract MinERC20Like is SecureERC20, FsTKToken {
   using AddressExtension for address;
   using Math for uint256;
 
@@ -426,7 +426,7 @@ contract BasicERC20Like is SecureERC20, FsTKToken {
   }
 }
 
-contract BasicServiceFriendlyToken is BasicERC20Like {
+contract MinServiceFriendlyToken is MinERC20Like {
 
   string public name;
   string public symbol;
