@@ -17,17 +17,17 @@ requires: 20
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
 <!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
-這個代幣介面標準是為了讓代幣 (Token) 能更方便地與服務型智能合約或鏈下服務對接，並提供對於代幣是友善的開發環境、使用環境。
+This Token Standard is designed to make it clearer and easier for Tokens to interact with service-based smart contracts or off-chain services, and to provide an environment that is friendly to Tokens.
 
 ## Abstract
 
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-原本專注於群眾募資的代幣技術與市場，遭遇到了即將要轉型成實用型 (Utility Token) 的陣痛期，非常多的專案或企業遇到了代幣的智能合約功能不足的問題，難以支撐基本的商業模式並應用於更多現實世界的服務或產品。
+The Token technology and market, which originally focused on crowdfunding, now have a painful period of transition to a **Utility Token**. Many projects or companies have insufficient smart contract functions of Tokens, which made it difficult to support the fundamentals of their business model and apply to more real-world services or products.
 
-以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 時常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
+The following interface standard designs are based on the fundamental functions that businesses often need when experiencing a **Healthy Tokenisation**, and for removing the difficulty of making secure connections between smart contracts, and the difficulty of integrating on-chains and off-chains. We FundersToken aim to building a Native Token environment, a friendly environment for Tokens.
 
-以及 FundersToken 原創的代幣傳送轉發 (Token transfer relay)，為代幣以智能合約的方式模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
+And FundersToken's **Token transfer relay**, which simulates blockchains in the form of smart contracts for Tokens, and frees end users from the need and limitation to pay Ether as gas fee.
 
 ## Motivation
 
