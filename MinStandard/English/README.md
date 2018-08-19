@@ -87,16 +87,19 @@ Moreover, the above is not only to increase the consistency and the linking flex
 
 ---
 
-對於代幣化所做的再補強，是基於了服務友善化之後，進一步批配商業上的客戶關係管理需求，以及移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙。
+As for the improvements in tokenisation, which are based on the service-friendly Token, and go a step further to conduct important features for business such as CRM and the Token relay (De-Ether).
 
-藉由一次性的多個傳送代幣，在此實作中是以儘量節省所消耗的以太坊燃料，讓代幣化過程中常見的大量批次傳送變得輕量、可預測，並且可以達成更好的客戶關係管理。
+The important feature for the CRM is by compacting multiple Token transfers and making the process as light as possible and predictable, which allows businesses to have more flexibility for CRM.
 
-而關於移除代幣化阻礙，目前以太坊上的代幣環境受到最大阻力的一個技術性原因，就是當終端使用者在傳送代幣時，要支付以太幣當作手續費。  
-這件事情的脈落若是以太坊身為一個去中心計算平台、金流平台，執行智能合約時支付燃料來穩定網路、回饋挖礦者或驗證者，無不合理而且大家都贊同。但以代幣終端使用者角度而言，這件事情就變得非常不正確，「沒有以太幣則無法使用代幣服務」的限制，讓代幣環境遭受到最大的「代幣化」阻礙。
+The Token relay is to remove the biggest technical barrier to have a healthy tokenisation, which is the end-users have to pay Ether in a Token trasfer as the transaction fee.  
+If this situation is in a context that Ethereum is a decentralised computing platform and cash platform, and to execute smart contracts, the end-users must pay Ether to stablise the Etherum network and incentivise the miners to sustain the network, then it's very rational and acceptable to everyone.  
+But if it is in a context of the Token, it becomes so wrong and cloggy.
 
-所以我們規範並實作了讓「代幣傳送者」簽署出特別的代幣傳送請求，讓「轉發者」可以檢查其中的代幣傳送費、簽章，然後幫忙轉發此請求，傳送以太坊交易至代幣合約，也就是轉發者幫忙支付了以太坊燃料費，代幣合約將檢查並履行其中的代幣傳送。此外，我們也避免代幣傳送者攻擊轉發者，或者是反過來轉發者攻擊代幣傳送者。
+"No Ether, No Token usage" obstructs the tokenisation.
+So we have implemented a feature that allows **Token trasfer origin** to sign a specific **Token trasfer request**, and the **Relayers** check its trasfer fee (in Token) and the signature then relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the requests.  
+Then the Token smart contract checks the relayed transfers and avoid any attack among transfer origin, relayers and the receivers.
 
-因著以上動機所做出的介面標準或實作，請參考下一個部份。
+Further details are in the next section.
 
 ## Specification
 
