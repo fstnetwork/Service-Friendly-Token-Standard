@@ -17,23 +17,23 @@ requires: 20
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
 <!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
-This Token Standard is designed to make it clearer and easier for Tokens to interact with service-based smart contracts or off-chain services, and to provide an environment that is friendly to Tokens.
+This Token standard is designed for the Tokens to interact with service-based smart contracts and off-chain services easily and smoothly, and providing an environment that is friendly to the Tokens.
 
 ## Abstract
 
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-The Token technology and market, which originally focused on crowdfunding, now have a painful period of transition to a **Utility Token**. Many projects or companies have insufficient smart contract functions of Tokens, which made it difficult to support the fundamentals of their business model and apply to more real-world services or products.
+The Token technology and market, which originally focused on crowdfunding, now have a painful period of the transition to **Utility Token**. Many projects or companies lack sufficient smart contract functions in the Tokens, which makes it difficult to support the fundamentals of their business and to apply to more real-world services or products.
 
-The following interface standard designs are based on the fundamental functions that businesses often need when experiencing a **Healthy Tokenisation**, and for removing the difficulty of making secure connections between smart contracts, and the difficulty of integrating on-chains and off-chains. We FundersToken aim to building a Native Token environment, a friendly environment for Tokens.
+The following interface designs are based on the fundamental features that businesses need when experiencing a **Healthy Tokenisation**, and for easing the difficulty of secure bindings among smart contracts, and the difficulty of integrating on-chains and off-chains. We FundersToken aim to build a Native Token environment, a friendly environment for the Tokens.
 
-And FundersToken's **Token transfer relay**, which simulates blockchains in the form of smart contracts for Tokens, and frees end users from the need and limitation to pay Ether as gas fee.
+And the **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and frees end-users from the need and the limitation to pay Ether as gas fee.
 
 ## Motivation
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-We divide the functionalities in this interface standard into the following categories：
+We divide the functionalities of this interface standard into the following categories :
 
 1.  [The improvements to ERC-20](#erc-20-補強)
 2.  [The improvements to make a Token service-friendly](#service-friendly-服務友善化-補強)
@@ -41,7 +41,7 @@ We divide the functionalities in this interface standard into the following cate
 
 As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations, the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
 
-We did some optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` for a small specification.
+We did the optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance`.
 
 ---
 
@@ -62,13 +62,13 @@ And the ERC-20 one:
 > CA represents Contract Account  
 > A represents EA and CA
 
-Most of the current Token standards are difficult to complete many continuous steps in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
+Most of the current Token standards are difficult to complete multiple continuous processes in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
 
-從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊交易執行流程，也就是傳送以太坊交易的對象是代幣智能合約而非接收者，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
+From the diagram above, we can see the Tokens are less direct and dynamic than Ether. Since Tokens are driven by the smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract rather than the `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
 
-也因為代幣的帳本 (Ledger) 就在代幣的智能合約中，帳本裡數字的變化操作就也要被包在代幣智能合約裡，或者是驗證外部智能合約的邏輯使帳本的數字能被調動，但前者會讓代幣開發緩慢，而後者會讓執行成本升高與安全性風險增高。
+And because the Token ledger is inside of the Token smart contract, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorize or apporve external smart contracts to extend the logic related to the ledger. But the former slows down the development cycle, the latter increases the execution costs and the security risks.
 
-FundersToken 在提供模組化智能合約與代幣化服務時，在開發過程中體驗到相當多的代幣不方便的環境。我們的流程目標為:
+We had experienced the inconvenience during the smart contract module development and providing the modularisation services. Our goal is to make the Token payment flow like below:
 
 ```
 (EA) --[transfer and call]-> (CA 1)
@@ -79,11 +79,11 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
      --[transfer and call]-> (A)
 ```
 
-簡單來說，我們希望代幣的金流或業務流程可以像是以太坊原本的方式一樣自然，並且讓代幣相關的服務開發起來是簡單直覺的，而非受了太多 ERC-20 沒有解決到的阻礙，造成業務擴展受到影響。
+In brief, we hope the payment and execution flow of the Tokens is natual as Ether's, and make the services related to the Tokens more direct and easier to develop, not setting back the business due to the inconvenience of ERC-20 Token standard.
 
-為了達成這些目的，我們針對 ERC-223 或 ERC-827 的 `transferAndCall` 的實作方法與潛在威脅進行了優化與增強，其中，讓 `receiverContract` 也就是服務型智能合約 (Service contract) 收到正確的代幣傳送數字 (Value) 與正確的代幣傳送者 (Token transfer sender)，讓 `receiverContract` 不會攻擊代幣傳送者，詳細會在下面補充。
+To achieve this goal, we improved the `transferAndCall` in ERC-223 and ERC-827, and ensure the `receiverContract` (the Service smart contract) always gets the real `value` and the real `from` (the origin of the Token trasfer), and make the `receiverContract` not able to attack the `from`. More details are in the next section.
 
-更進一步地說，以上不只是讓多個服務型智能合約的連接彈性與一致性獲得相當良好的提昇，讓智能合約間的業務流程模組化，並可以自由、信任地連接。這也使與鏈下接合 API 時，讓業務流程得到一次完整的一致性操作，大幅降低鏈下的狀態檢查或業務流程的影響，提高了更多鏈外開發者的導入意願度。
+Moreover, the above is not only to increase the consistency and the linking flexibility among the service-based smart contracts, and makes the business logic and the payment flow more modularised and secure, but it also allows the on-chain-off-chain integrations to be more complete and more consistent, significantly reduce the needs of status checking or multi-phase commit, and encourage more developers' adoption.
 
 ---
 
