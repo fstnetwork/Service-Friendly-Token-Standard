@@ -17,7 +17,7 @@ requires: 20
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
 <!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
-This Token standard is designed for the Tokens to interact with service-based smart contracts and off-chain services easily and smoothly, and providing an environment that is friendly to the Tokens.
+This Token standard is designed for the Tokens to interact with service-based smart contracts and off-chain services more easily and smoothly, and providing an environment that is friendly to the Tokens.
 
 ## Abstract
 
@@ -25,9 +25,9 @@ This Token standard is designed for the Tokens to interact with service-based sm
 
 The Token technology and market, which originally focused on crowdfunding, now have a painful period of the transition to **Utility Token**. Many projects or companies lack sufficient smart contract functions in the Tokens, which makes it difficult to support the fundamentals of their business and to apply to more real-world services or products.
 
-The following interface designs are based on the fundamental features that businesses need when experiencing a **Healthy Tokenisation**, and for easing the difficulty of secure bindings among smart contracts, and the difficulty of integrating on-chains and off-chains. We FundersToken aim to build a Native Token environment, a friendly environment for the Tokens.
+The following interface designs are based on the fundamental features that businesses need when experiencing a **Healthy Tokenisation**, and for easing the difficulty of secure bindings among smart contracts and integrating on-chains and off-chains. We FundersToken aim to build a Native Token environment, a friendly environment for the Tokens.
 
-And the **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and frees end-users from the need and the limitation to pay Ether as gas fee.
+And the **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and frees end-users from the need and the limitation to pay Ether as transaction fee (gas fee).
 
 ## Motivation
 
@@ -39,7 +39,7 @@ We divide the functionalities of this interface standard into the following cate
 2.  [The improvements to make a Token service-friendly](#service-friendly-服務友善化-補強)
 3.  [The improvements in healthy tokenisation](#tokenisation-代幣化-補強)
 
-As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations, the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
+As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations such as the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
 
 We did the optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance`.
 
@@ -56,13 +56,14 @@ And the ERC-20 one:
     (EA) --[transfer]-> (A)
     OR
     (EA) ---[approve]-> (CA)
+    OR
     (EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
 
 > EA represents External Account  
 > CA represents Contract Account  
-> A represents EA and CA
+>  A represents EA and CA
 
-Most of the current Token standards are difficult to complete multiple continuous processes in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
+Most of the current Token standards are difficult to compose multiple continuous processes in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
 
 From the diagram above, we can see the Tokens are less direct and dynamic than Ether. Since Tokens are driven by the smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract rather than the `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
 
@@ -81,9 +82,9 @@ We had experienced the inconvenience during the smart contract module developmen
 
 In brief, we hope the payment and execution flow of the Tokens is natual as Ether's, and make the services related to the Tokens more direct and easier to develop, not setting back the business due to the inconvenience of ERC-20 Token standard.
 
-To achieve this goal, we improved the `transferAndCall` in ERC-223 and ERC-827, and ensure the `receiverContract` (the Service smart contract) always gets the real `value` and the real `from` (the origin of the Token trasfer), and make the `receiverContract` not able to attack the `from`. More details are in the next section.
+To achieve this goal, we have improved the `transferAndCall` in ERC-223 and ERC-827, and ensure the `receiverContract` (the Service smart contract) always gets the real `value` and the real `from` (the origin of the Token trasfer), and make the `receiverContract` not able to attack the `from`. More details are in the next section.
 
-Moreover, the above is not only to increase the consistency and the linking flexibility among the service-based smart contracts, and makes the business logic and the payment flow more modularised and secure, but it also allows the on-chain-off-chain integrations to be more complete and more consistent, significantly reduce the needs of status checking or multi-phase commit, and encourage more developers' adoption.
+Moreover, the above is not only to increase the consistency and the linking flexibility among the service-based smart contracts, making the business logic and the payment flow more modularised and secure, but to make the on-chain-off-chain integrations more complete and more consistent, significantly reduce the needs of status checking or multi-phase commit, and encourage more developers' adoption.
 
 ---
 
@@ -93,10 +94,10 @@ The important feature for the CRM is by compacting multiple Token transfers and 
 
 The Token relay is to remove the biggest technical barrier to have a healthy tokenisation, which is the end-users have to pay Ether in a Token trasfer as the transaction fee.  
 If this situation is in a context that Ethereum is a decentralised computing platform and cash platform, and to execute smart contracts, the end-users must pay Ether to stablise the Etherum network and incentivise the miners to sustain the network, then it's very rational and acceptable to everyone.  
-But if it is in a context of the Token, it becomes so wrong and cloggy.
+But if it is in the context of the Token, it becomes incorrect and cloggy.
 
-"No Ether, No Token usage" obstructs the tokenisation.
-So we have implemented a feature that allows **Token trasfer origin** to sign a specific **Token trasfer request**, and the **Relayers** check its trasfer fee (in Token) and the signature then relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the requests.  
+"No Ether, No Token usages" obstructs the tokenisation.
+So we have implemented a feature that allows **Token trasfer origin** to sign a specific **Token trasfer request**, and the **Relayers** check its trasfer fee (in Token) and the signature then relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
 Then the Token smart contract checks the relayed transfers and avoid any attack among transfer origin, relayers and the receivers.
 
 Further details are in the next section.
