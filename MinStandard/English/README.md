@@ -41,7 +41,7 @@ We divide the functionalities of this interface standard into the following cate
 
 As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations such as the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
 
-We did the optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance`.
+We did the optimisations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance`.
 
 ---
 
@@ -106,23 +106,23 @@ Further details are in the next section.
 
 <!--The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Ethereum platforms (go-ethereum, parity, cpp-ethereum, ethereumj, ethereumjs, and [others](https://github.com/ethereum/wiki/wiki/Clients)).-->
 
-### ERC-20 補強
+### The improvements to ERC-20
 
-索引:
+Index:
 
-1. [對於 `address` 與 `uint256` 的延伸](#對於-address-與-uint256-的延伸)
-2. [基本的代幣資訊，一開始就指定好並且是常數性的](#基本的代幣資訊一開始就指定好並且是常數性的)
-3. [優化過的儲存代幣擁有者的資訊，實作部份](#優化過的儲存代幣擁有者的資訊實作部份)
-4. [會變動的代幣資訊](#會變動的代幣資訊)
-5. [代幣事件](#代幣事件)
-6. [代幣的操作相關函數](#代幣的操作相關函數)
-7. [增強安全用代幣資訊、操作](#增強安全用代幣資訊操作)
+1. [Extension to `address` and `uint256`]
+2. [Immutable Token basic info]
+3. [Optimised Token holders' storage]
+4. [Mutable Token basic info]
+5. [Events of the Token]
+6. [Operation functions of the Token]
+7. [More secure Token]
 
 ---
 
-#### 對於 `address` 與 `uint256` 的延伸:
+#### Extension to `address` and `uint256`:
 
-我們對於我們所使用的 `address` 型態與 `uint256` 型態進行了延伸
+We extended the methods in type `address` and `uint256`
 
 <details><summary>AddressExtension Soucre Code</summary>
 
@@ -259,11 +259,11 @@ library Math {
 
 ---
 
-#### 基本的代幣資訊，一開始就指定好並且是常數性的:
+#### Immutable Token basic info:
 
-- `string name` 為代幣名稱
-- `string symbol` 為代幣代號
-- `uint8 decimals` 為儲存代幣擁有者的數字時，儲存的位數精度
+- `string name` The Token name
+- `string symbol` The Token symbol
+- `uint8 decimals` The decimals of stored number in ledger 
 
 ```
 string public constant name;
@@ -273,17 +273,17 @@ uint8 public constant decimals;
 
 ---
 
-#### 優化過的儲存代幣擁有者的資訊，實作部份:
+#### Optimised Token holders' storage:
 
-在 `Account` 中
+In `Account`,
 
-- `uint256 balance` 為擁有代幣數、餘額
-- `uint256 nonce` 為擁有者所操作過的 transfer (代幣傳送) 個數，避免傳送，但只用於轉發模式，在後面將會說明
-- `mapping (address => Instrument) instruments` 為儲存代幣擁有者與其他代幣擁有者之間的資料，包含
+- `uint256 balance` is the balance of the Token holder
+- `uint256 nonce` is the transfer count of the Token holder, avoiding double spending, but only used in Token relay mode, the details are in [Tokenisation section]().
+- `mapping (address => Instrument) instruments` is the storage stores the data among the Token holders.
 
-在 `Instrument` 中
+In `Instrument` ,
 
-- `uint256 allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `uint256 allowance` is the allowance of the Token holder that approved to other holders
 
 _`DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的相關資訊，`DirectDebit` 的部份為一個可以在 `Instrument` 裡面擺放的代幣擁有者帳戶間資料示範，並非收納於此標準中，但完整版的 Service-Friendly Token Standard 中有收錄_
 
