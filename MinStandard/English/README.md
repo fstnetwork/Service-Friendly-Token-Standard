@@ -49,15 +49,58 @@ About what is a service-friendly environment, we can simply begin with the desig
 
 The journey of an Ethereum transaction and the payment flow:
 
-    (EA) --[tx]-> (CA 1) --[msg]-> (CA 2) --[msg]-> ... --[msg]-> (A)
+```mermaid
+graph LR
+
+EA((EA))
+CA1((CA 1))
+CA2((CA 2))
+CA3((CA 3))
+A((A))
+
+EA  --- Z1[tx]
+Z1  --> CA1
+CA1 --- Z2[msg]
+Z2  --> CA2
+CA2 --- Z3[msg]
+Z3  --> CA3
+CA3 -.- Z4[msg]
+Z4  -.-> A
+```
 
 And the ERC-20 one:
 
-    (EA) --[transfer]-> (A)
-    OR
-    (EA) ---[approve]-> (CA)
-    OR
-    (EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
+```mermaid
+graph LR
+
+EA((EA))
+A1((A))
+
+EA --- Z1[transfer]
+Z1 --> A1
+
+```
+
+or
+
+```mermaid
+graph LR
+
+EA1((EA))
+CA1((CA))
+
+EA2((EA))
+CA2((CA))
+
+EA1 --- Z1[approve]
+Z1  --> CA1
+
+EA2 --- Z2[call]
+Z2  --> CA2
+CA2 --- Z3[transferFrom EA]
+Z3  --> A1((A))
+
+```
 
 > EA represents External Account  
 > CA represents Contract Account  
