@@ -326,9 +326,9 @@ In `Account`,
 
 In `Instrument` ,
 
-- `uint256 allowance` is the allowance of the Token holder that approved to other holders
+- `uint256 allowance` is the allowance for other users approved by the token holder
 
-_`DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的相關資訊，`DirectDebit` 的部份為一個可以在 `Instrument` 裡面擺放的代幣擁有者帳戶間資料示範，並非收納於此標準中，但完整版的 Service-Friendly Token Standard 中有收錄_
+_`DirectDebit directDebit` is the direct debit info of the token holder, but this part is more like an example to design a shared data structure among the token holders. The Service-Friendly Token Standard extension and the token implementation of by FundersToken contain this structure_
 
 ```
 struct Instrument {
@@ -347,11 +347,11 @@ mapping(address => Account) internal accounts;
 
 ---
 
-#### 會變動的代幣資訊:
+#### Mutable Token basic info:
 
-- `totalSupply()` 為代幣總發行量
-- `balanceOf(address)` 為查詢代幣擁有者的代幣餘額
-- `allowance(address,address)` 為查詢代幣擁有者允許其他帳戶可以利用自己的多少額度
+- `totalSupply()` get the totalSupply of the token
+- `balanceOf(address)` get the balance of the token holder
+- `allowance(address,address)` get the allowance of the approved user
 - `address issuer` 為代幣發行者位址，這雖然非 ERC-20 標準之要求，而於諸多操作中需要此資訊之檢查
 
 ```
