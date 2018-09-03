@@ -17,17 +17,17 @@ requires: 20
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
 <!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
-This Token standard is designed for the Tokens to interact with service-based smart contracts and off-chain services more easily and smoothly, and providing an environment that is friendly to the Tokens.
+This Token standard is designed to allow Tokens to interact with service-based smart contracts and off-chain services seamlessly and without friction, providing a friendly environment for the Tokens.
 
 ## Abstract
 
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-The Token technology and market, which originally focused on crowdfunding, now have a painful period of the transition to **Utility Token**. Many projects or companies lack sufficient smart contract functions in the Tokens, which makes it difficult to support the fundamentals of their business and to apply to more real-world services or products.
+Originally designed to be a crowdfunding tool, Tokens now have a painful period of transition to being a Utility Token, to provide their service to the token holders. Many projects and companies lack sufficient Smart Contract functionalities in their Tokens, which makes it difficult to support the fundamentals of their business venture and to apply it to real-world services and products.
 
-The following interface designs are based on the fundamental features that businesses need when experiencing a **Healthy Tokenisation**, and for easing the difficulty of secure bindings among smart contracts and integrating on-chains and off-chains. We FundersToken aim to build a Native Token environment, a friendly environment for the Tokens.
+The following interface designs are based on the fundamental features and aspects of a **Robust Tokenisation** that businesses need. This including removing the difficulties of secure bindings among smart contracts and on-chains and off-chains integration. We, FundersToken based on our experience, understanding of the Token Standards that are available in the market, FundersToken have made several improvements on the Token Standards aiming to build a Native Token Environment, a friendly environment for Tokens.
 
-And the **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and frees end-users from the need and the limitation to pay Ether as transaction fee (gas fee).
+FundersToken have also developed a **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and releases end-users from the need and limitation of only using Ether as transaction fee (gas fee) when making a token transfer.
 
 ## Motivation
 
