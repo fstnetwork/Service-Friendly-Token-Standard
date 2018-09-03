@@ -33,21 +33,21 @@ FundersToken have also developed a **Token transfer relay**, which simulates blo
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-We divide the functionalities of this interface standard into the following categories :
+We categorise this interface standard to the following :
 
-1.  [The improvements to ERC-20](#erc-20-補強)
-2.  [The improvements to make a Token service-friendly](#service-friendly-服務友善化-補強)
-3.  [The improvements in healthy tokenisation](#tokenisation-代幣化-補強)
+1.  [The improvements made on ERC-20](#erc-20-補強)
+2.  [The improvements made to make a Token service-friendly](#service-friendly-服務友善化-補強)
+3.  [The improvements for Robust Tokenisation](#tokenisation-代幣化-補強)
 
-As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations such as the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
+As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible and viable direction, however due to different implementations, such as gas consumption and mathematical safety of execution, many Tokens have suffered abuse and denial-of-service that led to financial loss.
 
-We did the optimisations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance`.
+We have make optimisation and made mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` efficiently.
 
 ---
 
-About what is a service-friendly environment, we can simply begin with the design goals of the payment flow and smart contracts.
+To define a service-friendly environment, we must first identify the design goals of the payment flow and the smart contracts on the Ethereum Blockchain.
 
-The journey of an Ethereum transaction and the payment flow:
+The payment flow of an Ethereum transaction :
 
 ```mermaid
 graph LR
@@ -68,7 +68,7 @@ CA3 -.- Z4[msg]
 Z4  -.-> A
 ```
 
-And the ERC-20 one:
+The payment flow of a ERC20 token transaction :
 
 ```mermaid
 graph LR
@@ -106,13 +106,13 @@ Z3  --> A1((A))
 > CA represents Contract Account  
 >  A represents EA and CA
 
-Most of the current Token standards are difficult to compose multiple continuous processes in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
+Most of the current Token standards have difficulties to compose multiple continuous processes in one Ethereum transaction, in additional the transaction must be triggered after the process of `approve` is done, this process is also in risk to be attacked by other smart contracts, by deliberately consuming the `allowance` more than the intended consumption.
 
-From the diagram above, we can see the Tokens are less direct and dynamic than Ether. Since Tokens are driven by the smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract rather than the `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
+From the statement above, we can see the Tokens are less direct and dynamic compared to Ether. Since Tokens are driven by smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract instead of `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
 
-And because the Token ledger is inside of the Token smart contract, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorize or apporve external smart contracts to extend the logic related to the ledger. But the former slows down the development cycle, the latter increases the execution costs and the security risks.
+And because the Token ledger is within the smart contract of the token, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorize or approve external smart contracts to extend the logic that is related to the ledger. But the former option slows down the development cycle, the latter option will increase the execution cost and security risks.
 
-We had experienced the inconvenience during the smart contract module development and providing the modularisation services. Our goal is to make the Token payment flow like below:
+We had experienced the inconvenience during the development of smart contract module and providing modularisation services. Our goal is to make the Token payment flow described  below :
 
 ```
 (EA) --[transfer and call]-> (CA 1)
@@ -123,24 +123,24 @@ We had experienced the inconvenience during the smart contract module developmen
      --[transfer and call]-> (A)
 ```
 
-In brief, we hope the payment and execution flow of the Tokens is natual as Ether's, and make the services related to the Tokens more direct and easier to develop, not setting back the business due to the inconvenience of ERC-20 Token standard.
+In short, we hope to make payment flow and execution flow of the Tokens are as natural as Ether's, and make the services provided by the Tokens more direct, intuitive and easier to develop, instead of setting back the business due to the inconvenience of ERC-20 Token standard.
 
-To achieve this goal, we have improved the `transferAndCall` in ERC-223 and ERC-827, and ensure the `receiverContract` (the Service smart contract) always gets the real `value` and the real `from` (the origin of the Token trasfer), and make the `receiverContract` not able to attack the `from`. More details are in the next section.
+To achieve this goal, we have improved the `transferAndCall` in ERC-223 and ERC-827, and ensure the `receiverContract` (the Service smart contract) always gets the real `value` and the real `from` (the origin of the Token transfer), and make the `receiverContract` unable to attack the `from`. We will explain this in detail later.
 
-Moreover, the above is not only to increase the consistency and the linking flexibility among the service-based smart contracts, making the business logic and the payment flow more modularised and secure, but to make the on-chain-off-chain integrations more complete and more consistent, significantly reduce the needs of status checking or multi-phase commit, and encourage more developers' adoption.
+Moreover, what was mentioned above is not only to increase the consistency and the linking flexibility among the service-based smart contracts, making the business logic and the payment flow more modularised and secured, but to make on-chain-off-chain integrations more complete and more consistent, reducing the needs of status checking or multi-phase commit development, encouraging more developers' adoption.
 
 ---
 
-As for the improvements in tokenisation, which are based on the service-friendly Token, and go a step further to conduct important features for business such as CRM and the Token relay (De-Ether).
+As the improvement made for tokenisation, it is based after our service-friendly Token, and we took a step further to conduct important features for businesses such as CRM functionality and Token relay to achieve a De-Ether environment.
 
-The important feature for the CRM is by compacting multiple Token transfers and making the process as light as possible and predictable, which allows businesses to have more flexibility for CRM.
+The important feature for CRM is compacting multiple Token transfers and making the process as light and predictable as possible, which allows businesses to have more flexibility for CRM applications.
 
-The Token relay is to remove the biggest technical barrier to have a healthy tokenisation, which is the end-users have to pay Ether in a Token trasfer as the transaction fee.  
-If this situation is in a context that Ethereum is a decentralised computing platform and cash platform, and to execute smart contracts, the end-users must pay Ether to stablise the Etherum network and incentivise the miners to sustain the network, then it's very rational and acceptable to everyone.  
-But if it is in the context of the Token, it becomes incorrect and cloggy.
+The Token relay is to remove the biggest technical barrier, which is the need for end-users to pay Ether in a Token transfer as the transaction fee.  
+If the situation is in a context of  that Ethereum is a decentralised computing platform and cash platform, and to execute smart contracts, the end-users must pay Ether to stablise the Ethereum network and incentivise the miners to sustain the network, then it's very rational and acceptable to everyone.  
+But if it is in the context of Tokens, it becomes illogical and cloggy.
 
-"No Ether, No Token usages" obstructs the tokenisation.
-So we have implemented a feature that allows **Token trasfer origin** to sign a specific **Token trasfer request**, and the **Relayers** check its trasfer fee (in Token) and the signature then relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
+The idea of "No Ether, No Token usages" obstructs the utility of tokenisation.  
+So we have implemented a feature that allows the origin of a token transfer to sign a specific **Token transfer request**, and the **Relayers** check its transfer fee (in Token) and the signature then the Relayers relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
 Then the Token smart contract checks the relayed transfers and avoid any attack among transfer origin, relayers and the receivers.
 
 Further details are in the next section.
