@@ -40,7 +40,7 @@ We categorise this interface standard to the following:
 
 As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible and viable direction, however due to different implementations, such as gas consumption and mathematical safety of execution, many Tokens have suffered abuse and denial-of-service that led to financial loss.
 
-We have make optimisation and made mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` efficiently.
+We have made optimisation and made mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` efficiently.
 
 ---
 
@@ -105,7 +105,7 @@ Z3  --> A1((A))
 > CA represents Contract Account  
 >  A represents EA and CA
 
-Most of the current Token standards have difficulties to compose multiple continuous processes in one Ethereum transaction, in additional the transaction must be triggered after the process of `approve` is done, this process is also in risk to be attacked by other smart contracts, by deliberately consuming the `allowance` more than the intended consumption.
+Most of the current Token standards have difficulties to compose multiple continuous processes in one Ethereum transaction, in addition, the transaction must be triggered after the process of `approve` is done, this process is also in risk to be attacked by other smart contracts, by deliberately consuming the `allowance` more than the intended consumption.
 
 From the statement above, we can see the Tokens are less direct and dynamic compared to Ether. Since Tokens are driven by smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract instead of `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
 
@@ -130,7 +130,7 @@ Moreover, what was mentioned above is not only to increase the consistency and t
 
 ---
 
-As the improvement made for Tokenisation, it is based after our service-friendly Token, and we took a step further to conduct important features for businesses such as CRM functionality and Token relay to achieve a De-Ether environment.
+As for the improvement made for Tokenisation, it is based after our service-friendly Token, and we took a step further to conduct important features for businesses such as CRM functionality and Token relay to achieve a De-Ether environment.
 
 The important feature for CRM is compacting multiple Token transfers and making the process as light and predictable as possible, which allows businesses to have more flexibility for CRM applications.
 
@@ -139,7 +139,7 @@ If the situation is in a context of  that Ethereum is a decentralised computing 
 But if it is in the context of Tokens, it becomes illogical and cloggy.
 
 The idea of "No Ether, No Token usages" obstructs the utility of Tokenisation.  
-So we have implemented a feature that allows the origin of a Token transfer to sign a specific **Token transfer request**, and the **Relayers** check its transfer fee (in Token) and the signature then the Relayers relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
+So we have implemented a feature that allows the origin of a Token transfer to sign a specific **Token transfer request**, and the **Relayers** check its transfer fee (in Token) and the signature, then the Relayers relay the request by sending the request to the Token smart contract, which also means the Relayers pay the Ethereum gas fee for the request.  
 Then the Token smart contract checks the relayed transfers and avoid any attack among transfer origin, relayers and the receivers.
 
 Further details are in the next section.
@@ -329,7 +329,7 @@ In `Instrument` ,
 
 _`DirectDebit directDebit` shows the detail of agreement which the Token holder allows withdrawal by other holders on a particular date in a designated time-frame._
 
-_`DirectDebit` is a demonstration of data between Token holders that can be placed in Instrument. It is not included in this standard, but it is included in the full version of Service-Friendly Token Standard._
+_`DirectDebit` is a demonstration of data between Token holders that can be placed in `Instrument`. It is not included in this standard, but it is included in the full version of Service-Friendly Token Standard._
 
 ```
 struct Instrument {
@@ -453,7 +453,7 @@ When `erc20ApproveChecking` is `true`, `approve(address,uint256)` will do extra 
 - `approve(address,uint256,uint256)` is an `approve` that requires `expectedValue` before assigning new `allowance`
 - `increaseAllowance(address,uint256)` can directly increment `allowance`
 - `decreaseAllowance(address,uint256,bool)` can directly decrease `allowance`, and when `strict` is `true`, it will do the substraction via `Math` library.
-- `spendableAllowance(address,address)` provides the `Math.Min` of the balance of the Token holder and the allowance for the `spender`.
+- `spendableAllowance(address,address)` provides the `Math.Min` of **the balance of the Token holder** and **the allowance for the `spender`**.
 
 <details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
 
@@ -536,29 +536,29 @@ Index:
 
 #### Transfer and call:
 
-To make Token transfer and calling `receivcerContract` in one go, and to make these calls chainable and trustworthy, which guarantees that `value` and `msg.sender` are secured by the Token smart contract, hence the arguments checks and the replacement in Token smart contract will be very strict.
+To make Token transfer and calling `receivcerContract` in one go, and to make these calls chainable and trustworthy, which guarantees that `value` and `msg.sender` are secured by the Token smart contract, the arguments checks and the replacement in Token smart contract will be very strict.
 
 In `transferAndCall(address,uint256,bytes)`,
 
 - `address to` is the address of the `receiverContract`.
 - `uint256 value` is the Token value to be transferred.
-- `bytes data` is the calldata for all the post continuous processes, which is used with `to.call(data)`, including `fuction signature`, `value` and `msg.sender`
+- `bytes data` is the calldata for all post continuous processes, which is used with `to.call(data)`, including `fuction signature`, `value` and `msg.sender`
 
 Because `data` must contain the calldata to the `receiverContract`, the length would be at least **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**.
 
-And do the checks below:
+And this function does the checks below:
 
 - `to` must not be Token smart contract itself.
 - The length of `data` must be equal or longer than 68 bytes
-- The Token transfer is successful before calling `receiverContract`
+- The Token transfer needs to be successful before calling `receiverContract`
 
-Then replace first two arguments in `data` by force, the original `data` must be in the form:
+Then replaces first two arguments in `data` by force, the original `data` must be in the form:
 
 ```
 [4 bytes signature][32 bytes value][32 bytes msg.sender][other calldata.....]
 ```
 
-We put `uint256 value` before `address sender` (`address from`) to not be confused by `address to` + `uint256 value` pair.
+We put `uint256 value` before `address sender` (`address from`) to not be confused by `address to` + `uint256 value` pair in normal `transfer(address,uint256)`.
 
 ```
 // Token Contract (TokenA, decimals = 18)
@@ -669,7 +669,7 @@ function transfer(uint256[] data) public returns (bool) {
 
 #### Delegated Token transfer and call:
 
-This is the key component of a Robust Tokenisation, allowing the Token transfer to pay the fee in the Token but not to pay Ethereum Gas Fee anymore.
+This is the key component of a Robust Tokenisation, allowing the Token transfer to pay the fee in Token but not to pay Ethereum Gas Fee anymore.
 
 This delegation is also toggleable:
 
@@ -689,7 +689,7 @@ function setDelegate(bool delegate) public {
 
 ---
 
-在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
+In `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)`,
 
 - `uint256 nonce` is the count of the transfer of the Token holder (Token transfer origin).
 - `uint256 fee` is the Token transfer fee for the relayer set by the Token transfer origin.
@@ -702,8 +702,8 @@ function setDelegate(bool delegate) public {
 - `bytes32 r` is the `r` in the ECDSA signature signed by the origin of the Token transfer.
 - `bytes32 s` is the `s` in the ECDSA signature signed by the origin of the Token transfer.
 
-The origin of the Token transfer needs to compose the information described above and sign them, then send the information ot the relayers.  
-The implementation of off-chain part is not restricted, but the spec of the signature must follow the way below:
+The origin of the Token transfer needs to compose the informations described above and sign them, then send the informations to the relayers.  
+The implementation of off-chain part is not restricted, but the generation of the ECDSA signature must follow:
 
 ```
 ECDSA_Sign(
@@ -723,10 +723,10 @@ ECDSA_Sign(
 )
 ```
 
-There are 4 modes for `DelegateMode`:
+There are 4 options for `DelegateMode`:
 
-- 0: `PublicMsgSender` represents everyone can be the relayer, and the `fee` will be transferred to `msg.sender` in the delegation.
-- 1: `PublicTxOrigin` represents everyone can be the relayer, and the `fee` will be transferred to `tx.origin` in the delegation.
+- 0: `PublicMsgSender` represents any relayer can relay the transfer request, and the `fee` will be transferred to `msg.sender` in the delegation.
+- 1: `PublicTxOrigin` represents any relayer can relay the transfer request, and the `fee` will be transferred to `tx.origin` in the delegation.
 - 2: `PrivateMsgSender` represents the origin of the Token transfer has assigned a specific relayer, and the `fee` will be transferred to `msg.sender` in the delegation.
 - 3: `PrivateTxOrigin` represents the origin of the Token transfer has assigned a specific relayer, and the `fee` will be transferred to `tx.origin` in the delegation.
 
@@ -837,10 +837,10 @@ function nonceOf(address owner) public view returns (uint256) {
 }
 ```
 
-If the origin of the Token transfer needs to cancel the mis-sent Token transfer, it can be cancelled by manually increasing the nonce of the orign.
+If the origin of the Token transfer needs to cancel the mis-sent Token transfer or prevent any kinds of front-running attack, it can be cancelled by manually increasing the nonce of the origin.
 
 - `IncreaseNonce(address,uint256)` is an event emitted when the `nonce` increases via `delegateTransferAndCall()` and `increaseNonce()`.
-- `increaseNonce()` allows the Token holder (the origin of the Token transfer) to manually increase the nonce to make mis-sent Token transfer failed.
+- `increaseNonce()` allows the Token holder (the origin of the Token transfer) to manually increase the nonce to let mis-sent Token transfer failed.
 
 ```
 event IncreaseNonce(address indexed from, uint256 nonce);
@@ -858,11 +858,11 @@ We will summarise and add in the details in the following.
 
 ### The improvements made on ERC-20
 
-As ERC-20 only specifies the interface and has lack the requirements and suggestion for real-world practices. While building on top of the ERC-20 standard, we have encountered a few challenges and after finding the solution, we decided to infuse our solution into this standard. For entreprise users and Token end-users, a vivid operating logic and low-cost is a must, with that in mind, we have implemented several optimisation for storage. Taking `accounts` as an example, we have changed the mapping of accounts to only read the struct of the reference and only to take the necessary data, by doing this, the process would be lighter compared to read the all accounts-related mappings.
+As ERC-20 only specifies the interface and has lacked the requirements and suggestion for real-world practices. While building on top of the ERC-20 standard, we have encountered a few challenges and after finding the solution, we decided to infuse our solution into this standard. For enterprise users and Token end-users, a vivid operating logic and low-cost is a must, with that in mind, we have implemented several optimisation for storage. Taking `accounts` as an example, we have changed the mapping of accounts to only read the struct of the reference and only to take the necessary data, by doing this, the process would be lighter compared to read the all accounts-related mappings.
 
 We have also made improvements on security, specifically on preventing front-running attack by the `spender`, when the Token holder is assigning `allowance`. If this process is not checked, the process of assigning `allowance` from 1,000 to 500, in a front-running attack scenario, the attacker would first spend 1,000 that was previously assigned, and as the Token holder  approve another 500, making the `allowance`: **1,000 -> 0 -> 500**.
 
-In a safer environment, the requirement before approve a new value, at least under the ERC-20 interface, the `allowance` would return to 0. While this mechanism makes it safer, but this would mean that 2 Ethereum transactions would be needed. However we would suggest to utilise the interface of `expectedValue`, as both `increaseAllowance` and `decreaseAllowance` are in risk of front-running attack.
+In a safer environment, the requirement before approving a new value, at least under the ERC-20 interface (`approve(address,uint256)`), the `allowance` must return to 0. While this mechanism makes it safer, but this would mean that 2 Ethereum transactions would be needed. However we would suggest to utilise the interface of `expectedValue`, as both `increaseAllowance` and `decreaseAllowance` are in risk of front-running attack.
 
 ### The improvements made to make a Token service-friendly
 
@@ -870,11 +870,11 @@ First of all, we intentionally named the function as `transferAndCall`, instead 
 
 However if we prohibit ERC-20 `transfer` just because of too many Tokens are sent to a smart contract that are unable to transfer the Token, it would be putting the cart before the horse. As this is not the fault of ERC-20 but the fault of the one who transfers the Tokens and the service provider.
 
-We intentionally used a different terms to express different functionality, most importantly different aims and different motives. Because we wanted to make Token-related transaction and transfer process to be intuitive and easy to plan, we have allow the mechanism for receiving smart contract to perform continuous actions and to replace the original calldata with the correct calldata by force, thus no one would be able to abuse any resources.
+We intentionally used a different terms to express different functionality, most importantly different aims and different motives. Because we wanted to make Token-related transaction and transfer process to be intuitive and easy to plan, we have allowed the mechanism for receiving smart contract to perform continuous actions and to replace the original calldata with the correct calldata by force, thus no one would be able to abuse any resources.
 
 Imagine a single Ethereum transaction to perform a continuous `transferAndCall`, it is similar to putting a complex payment flow on chain, complex yet stream-lined procedure, and can be extensive, scalable by will, to achieve a service-friendly modularisation for Tokens.
 
-This is why this section is called **Service-Friendly**, because a Service-Friendly smart contract is easy to use, trustworthy, also to be able to integrate the business logics off-chain, to be able to do all of these on Ethereum, that’d be a blessing.
+This is why this section is called **Service-Friendly**, because a Service-Friendly smart contract is easy to use, trustworthy, also to be able to integrate the business logics off-chain, to be able to do all of these on Ethereum, that'd be a blessing.
 
 ### The improvements for Robust Tokenisation
 
@@ -885,9 +885,9 @@ A **volunteer**, also known as a **Relayer** must be able to voluntarily pick a 
 The list below shows the potential attack and the solution for the attacks:
 
 1. Relayer repeatedly sends Token transfer request or broadcast a wrong Token transfer to the Token smart contract.
-   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce()`. Even when the Token transfer request has failed, `nonce` will increase regardless.
+   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce()`). Even when the Token transfer execution has failed, `nonce` will increase regardless.
 2. Relayer took the Token transfer request and send it to another Token smart contract with the same `nonce`
-   > Can be solved by adding data of `TokenAddress` into signature
+   > Can be solved by adding data of `tokenAddress` into signature
 3. The origin of the Token transfer wasting Relayer's Ethereum Gas fee.
    > This can be solved by adding the data for `gasAmount` into the signature, in a scenario where the origin of the Token transfer provides a very small incentive to the relayer, the relayer will be able to see it from the start, hence will be able to drop the request.
    > And also, to make sure this type of attack will inevitably fail, and to ensure relayer to get the `fee` for the transfer, thus even in a scenario of a failed Token transfer request, it'd be sent regradless. Meaning that the origin of the Token transfer should check the condition before making the Token transfer, by doing so, it'd also prevent relayer to waste resources conversely. Similar to what Ethereum is doing.
@@ -895,11 +895,11 @@ The list below shows the potential attack and the solution for the attacks:
    > Add data of `gasAmount` to the signature, because the origin of the Token transfer has defined this number, hence this is solvable, even if the number is wrong, we can still fix this issue similar to **scenario 1.**. In a worst case scenario, the transaction will fail due to insufficient gas fee, which itself is solvable.
 
 We have considered all possible scenarios of attacks during our implementation and practices to ensure that we have a robust Token relay model up and running.  
-In other words, relayers will compete each other, thus providing a higher Ether gas price, making the Token transfer request to be confirmed faster, that is also we have emphasises on the design and improvement of `fee` and `gasAmount` because only via a fair mechanism we can attract relayers to relay Token transfers and allow them to earn Tokens and enable Token holders to enjoy a faster Token verification, making it a win-win situation.
+In other words, relayers will compete each other, thus providing a higher Ethereum gas price, making the Token transfer request to be confirmed faster, that is also we have emphasised on the design and improvement of `fee` and `gasAmount`, because only via a fair mechanism we can attract relayers to relay Token transfers and allow them to earn Tokens, and enable Token holders to enjoy a faster Token verification, making it a win-win situation.
 
 ### Conclusion
 
-This Token design is larger and complex compared to the others, yet it is still able to fit into a single block. To provide an extendable, scalable smart contract is our main goal, we also hope that this Token Standard would serve as the benchmark for **Service-Friendly Token Standard** that is yet to come, and to be the standard to allow **Utility Tokens** to be grounded. 
+This Token is larger and complex compared to the others, yet it is still able to fit into a single block during deployment. To provide an extendable, scalable smart contract is our main goal, we also hope that this Token Standard would serve as the benchmark for **Service-Friendly Token Standard** that is yet to come, and to be the standard to allow **Utility Tokens** to be grounded. 
 
 ## Backwards Compatibility
 
@@ -924,7 +924,7 @@ The test cases will be open-sourced soon.
 
 The Token that FundersToken (https://fstk.io) has issued, is one example of the Service-Friendly Token mentioned above, and it is integrated with the modules that FundersToken provide via our Decentralised Tokenisation Platform to form a robust service-based smart contracts.
 
-Mainnet address:  
+Mainnet address (Funder Smart Token, FST):  
 https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
 
 ## Copyright
