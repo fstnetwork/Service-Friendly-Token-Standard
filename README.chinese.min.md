@@ -17,52 +17,52 @@ requires: 20
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
 <!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
-This Token Standard is designed to make it clearer and easier for Tokens to interact with service-based smart contracts or off-chain services, and to provide an environment that is friendly to Tokens.
+這個代幣介面標準是為了讓代幣 (Token) 能更方便地與服務型智能合約或鏈下服務對接，並提供對於代幣是友善的開發環境、使用環境。
 
 ## Abstract
 
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-The Token technology and market, which originally focused on crowdfunding, now have a painful period of transition to a **Utility Token**. Many projects or companies have insufficient smart contract functions of Tokens, which made it difficult to support the fundamentals of their business model and apply to more real-world services or products.
+原本專注於群眾募資的代幣技術與市場，遭遇到了即將要轉型成實用型 (Utility Token) 的陣痛期，非常多的專案或企業遇到了代幣的智能合約功能不足的問題，難以支撐基本的商業模式並應用於更多現實世界的服務或產品。
 
-The following interface standard designs are based on the fundamental functions that businesses often need when experiencing a **Healthy Tokenisation**, and for removing the difficulty of making secure connections between smart contracts, and the difficulty of integrating on-chains and off-chains. We FundersToken aim to building a Native Token environment, a friendly environment for Tokens.
+以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 時常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
 
-And FundersToken's **Token transfer relay**, which simulates blockchains in the form of smart contracts for Tokens, and frees end users from the need and limitation to pay Ether as gas fee.
+以及 FundersToken 原創的代幣傳送轉發 (Token transfer relay)，為代幣以智能合約的方式模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
 
 ## Motivation
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-We divide the functionalities in this interface standard into the following categories：
+我們將此介面標準中的功能們分成以下幾類:
 
-1.  [The improvements to ERC-20](#erc-20-補強)
-2.  [The improvements to make a Token service-friendly](#service-friendly-服務友善化-補強)
-3.  [The improvements in healthy tokenisation](#tokenisation-代幣化-補強)
+1.  [針對 ERC-20 做的補強](#erc-20-補強)
+2.  [針對服務友善的環境 (Service-Friendly) 所做出的補強](#service-friendly-服務友善化-補強)
+3.  [針對健全的代幣化所做出的補強](#tokenisation-代幣化-補強)
 
-As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible direction, but because of different implementations, the gas consumption and mathematical safety of execution, many Tokens have suffered denial-of-service or financial loss.
+ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被證明是一個可行的方向，但其中因著不同的實作方式，執行時所耗的燃料成本與數學上的安全性，就造成不少代幣遭遇到了濫用或服務停擺。
 
-We did some optimizations and strict mathematical checks for the implementation of `transfer` and `approve`, and how to store `balance` and `allowance` for a small specification.
+我們針對 `transfer` 與 `approve` 的實作方式進行了執行時間的優化與嚴格的數學檢查，以及如何儲存 `balance` 與 `allowance` 進行了小量規範。
 
 ---
 
-About what is a service-friendly environment, we can simply begin with the design goals of the payment flow and smart contracts.
+關於何謂服務友善的環境，我們可以簡單地從金流與智能合約一開始的設計目的出發。
 
-The journey of an Ethereum transaction and the payment flow:
+以太坊交易 (Transaction) 與金流的旅程:
 
     (EA) --[tx]-> (CA 1) --[msg]-> (CA 2) --[msg]-> ... --[msg]-> (A)
 
-And the ERC-20 one:
+而 ERC-20 交易與金流的旅程:
 
     (EA) --[transfer]-> (A)
-    OR
+    或
     (EA) ---[approve]-> (CA)
     (EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
 
-> EA represents External Account  
-> CA represents Contract Account  
-> A represents EA and CA
+> EA 是 External Account  
+> CA 是 Contract Account  
+> A 是 EA and CA
 
-Most of the current Token standards are difficult to complete many continuous steps in one Ethereum transaction, or the transaction must be triggered after the `approve` is done, and may even be attacked by the smart contracts, by deliberately consuming the `allowance` other than the original intention.
+絕大部分現行的代幣標準難以在一次的交易中完成自動步驟，還要得 `approve` 之後觸發交易才行，甚至可能被其他智能合約攻擊，藉由故意消耗原意以外的 `allowance` 的方式。
 
 從上述即可看得出，代幣一開始就比以太幣 (Ether) 還要不方便使用，代幣是靠智能合約驅動出來的，智能合約的執行本身必須依循以太坊交易執行流程，也就是傳送以太坊交易的對象是代幣智能合約而非接收者，導致代幣數字 `transfer` 流程的直覺理解與實際技術上的實作方式是不同的。
 
@@ -866,7 +866,7 @@ function increaseNonce() public returns (bool) {
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
 經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試  
-原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinStandard/MinServiceFriendlyToken.sol
+原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinServiceFriendlyToken.sol
 
 ## Implementation
 

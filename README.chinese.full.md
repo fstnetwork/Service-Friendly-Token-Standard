@@ -35,9 +35,9 @@ requires: 20
 
 我們將此介面標準中的功能們分成以下幾類:
 
-1.  [針對 ERC-20 做的補強](#erc-20-補強)
-2.  [針對服務友善的環境 (Service-Friendly) 所做出的補強](#service-friendly-服務友善化-補強)
-3.  [針對健全的代幣化所做出的補強](#tokenisation-代幣化-補強)
+1.  針對 ERC-20 做的補強
+2.  針對服務友善的環境 (Service-Friendly) 所做出的補強
+3.  針對健全的代幣化所做出的補強
 
 ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被證明是一個可行的方向，但其中因著不同的實作方式，執行時所耗的燃料成本與數學上的安全性，就造成不少代幣遭遇到了濫用或服務停擺。
 
@@ -87,12 +87,15 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 
 ---
 
-對於代幣化所做的再補強，是基於了服務友善化之後，進一步批配商業上的客戶關係管理需求，以及移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙。
+對於代幣化所做的再補強，是基於了服務友善化之後，進一步移除以太坊手續費、以太坊主動操作等這類的代幣化阻礙，有以下三種：
 
-藉由一次性的多個傳送代幣，在此實作中是以儘量節省所消耗的以太坊燃料，讓代幣化過程中常見的大量批次傳送變得輕量、可預測，並且可以達成更好的客戶關係管理。
+1.  使代幣支援週期性的被動操作，例如定期直接扣款，就像是每月自動繳付信用卡費用一般
+2.  使代幣支援一次性大量操作
+3.  使代幣在被操作時，終端使用者不用負擔以太坊手續費
 
-而關於移除代幣化阻礙，目前以太坊上的代幣環境受到最大阻力的一個技術性原因，就是當終端使用者在傳送代幣時，要支付以太幣當作手續費。  
-這件事情的脈落若是以太坊身為一個去中心計算平台、金流平台，執行智能合約時支付燃料來穩定網路、回饋挖礦者或驗證者，無不合理而且大家都贊同。但以代幣終端使用者角度而言，這件事情就變得非常不正確，「沒有以太幣則無法使用代幣服務」的限制，讓代幣環境遭受到最大的「代幣化」阻礙。
+目前，被動操作在代幣上的實現方式為 `approve` 一個對象 (`spender`)，使這個被允許對象可以自行依照 `allowance` 的量進行代幣操作，而當業務流程上有個定期扣款的需求，終端使用者會變得要手動定期進行 `approve` 一個對象，對此我們實作了定期的直接扣款機制，讓被扣款方可以一次設定週期性設定，讓扣款方可以定期操作，也支援一次對多方進行直接扣款。
+
+最後我們談到，目前以太坊上的代幣環境受到最大阻力的一個技術性原因，就是當終端使用者在傳送代幣時，要支付以太幣當作手續費。這件事情的脈落若是以太坊身為一個去中心計算平台、金流平台，執行智能合約時支付燃料來穩定網路、回饋挖礦者或驗證者，無不合理而且大家都贊同。但以代幣終端使用者角度而言，這件事情就變得非常不正確，「沒有以太幣則無法使用代幣服務」的限制，讓代幣環境遭受到最大的「代幣化」阻礙。
 
 所以我們規範並實作了讓「代幣傳送者」簽署出特別的代幣傳送請求，讓「轉發者」可以檢查其中的代幣傳送費、簽章，然後幫忙轉發此請求，傳送以太坊交易至代幣合約，也就是轉發者幫忙支付了以太坊燃料費，代幣合約將檢查並履行其中的代幣傳送。此外，我們也避免代幣傳送者攻擊轉發者，或者是反過來轉發者攻擊代幣傳送者。
 
@@ -103,18 +106,6 @@ FundersToken 在提供模組化智能合約與代幣化服務時，在開發過�
 <!--The technical specification should describe the syntax and semantics of any new feature. The specification should be detailed enough to allow competing, interoperable implementations for any of the current Ethereum platforms (go-ethereum, parity, cpp-ethereum, ethereumj, ethereumjs, and [others](https://github.com/ethereum/wiki/wiki/Clients)).-->
 
 ### ERC-20 補強
-
-索引:
-
-1. [對於 `address` 與 `uint256` 的延伸](#對於-address-與-uint256-的延伸)
-2. [基本的代幣資訊，一開始就指定好並且是常數性的](#基本的代幣資訊一開始就指定好並且是常數性的)
-3. [優化過的儲存代幣擁有者的資訊，實作部份](#優化過的儲存代幣擁有者的資訊實作部份)
-4. [會變動的代幣資訊](#會變動的代幣資訊)
-5. [代幣事件](#代幣事件)
-6. [代幣的操作相關函數](#代幣的操作相關函數)
-7. [增強安全用代幣資訊、操作](#增強安全用代幣資訊操作)
-
----
 
 #### 對於 `address` 與 `uint256` 的延伸:
 
@@ -280,8 +271,7 @@ uint8 public constant decimals;
 在 `Instrument` 中
 
 - `uint256 allowance` 為代幣擁有者允許其他帳戶可以利用自己的多少額度
-
-_`DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的相關資訊，`DirectDebit` 的部份為一個可以在 `Instrument` 裡面擺放的代幣擁有者帳戶間資料示範，並非收納於此標準中，但完整版的 Service-Friendly Token Standard 中有收錄_
+- `DirectDebit directDebit` 為代幣擁有者允許其他帳戶可以定期直接扣款的相關資訊，`DirectDebit` 的部份在後面將會說明
 
 ```
 struct Instrument {
@@ -480,12 +470,6 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 ### Service-Friendly (服務友善化) 補強
 
-索引:
-
-1. [Transfer and call (傳送呼叫)](#transfer-and-call-傳送呼叫)
-
----
-
 #### Transfer and call (傳送呼叫):
 
 為了讓傳送代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
@@ -580,14 +564,151 @@ transferAndCall(
 
 ### Tokenisation (代幣化) 補強
 
-索引:
+#### 週期性的直接扣款:
 
-1. [一次性多個傳送代幣](#一次性多個傳送代幣)
-2. [代幣傳送委派、代幣轉發](#代幣傳送委派代幣轉發)
+直接扣款系列的實作是使代幣擁有者可以週期性地允許外部服務週期性地扣款
+
+在上述的 `Instrument` 結構中的 `DirectDebit` 中:
+
+- `DirectDebitInfo info` 為直接扣款資訊
+- `uint256 epoch` 為紀錄已經被扣款過的期數
+
+在 `DirectDebitInfo` 中:
+
+- `uint256 amount` 為每期的允許扣款額度
+- `uint256 startTime` 為允許的開始扣款時間，單位為秒 (Unix Epoch)
+- `uint256 interval` 為每期的週期間隔時間，單位為秒
+
+```
+struct DirectDebit {
+  DirectDebitInfo info;
+  uint256 epoch;
+}
+
+struct DirectDebitInfo {
+  uint256 amount;
+  uint256 startTime;
+  uint256 interval;
+}
+```
 
 ---
 
-#### 一次性多個傳送代幣
+直接扣款也是一個可以開啟或關閉的功能:
+
+- `bool isDirectDebitEnable` 為一個狀態值紀錄是否要開啟直接扣款功能，預設為 `false`，只有 `issuer` 才能更動
+- `SetDirectDebit(bool)` 為 `isDirectDebitEnable` 改變時會發射的事件，需要透過 `setDirectDebit(bool)` 引發
+
+```
+bool public isDirectDebitEnable;
+
+event SetDirectDebit(bool isDirectDebitEnable);
+
+function setDirectDebit(bool directDebit) public {
+  require(msg.sender == issuer);
+  emit SetDirectDebit(isDirectDebitEnable = directDebit);
+}
+```
+
+設定直接扣款的操作中:
+
+- `SetupDirectDebit(address,address,(uint256,uint256,uint256))` 為當一個代幣擁有者對某個位址設定了允許直接扣款時，所發射的事件
+- `setupDirectDebit(address,(uint256,uint256,uint256))` 為代幣擁有者允許某個位址定期直接扣款的操作
+
+```
+event SetupDirectDebit(address indexed debtor, address indexed receiver, DirectDebitInfo info);
+
+function setupDirectDebit(
+  address receiver,
+  DirectDebitInfo info
+)
+  public
+  returns (bool)
+{
+  accounts[msg.sender].instruments[receiver].directDebit = DirectDebit({
+    info: info,
+    epoch: 0
+  });
+
+  emit SetupDirectDebit(msg.sender, receiver, info);
+  return true;
+}
+```
+
+---
+
+要檢查直接扣款相關設定時:
+
+- `directDebit(address,address)` 為查看直接扣款資訊的操作
+
+```
+function directDebit(address debtor, address receiver) public view returns (DirectDebit) {
+  return accounts[debtor].instruments[receiver].directDebit;
+}
+```
+
+例如設定了每期 10 代幣，開始時間為 `2019-01-01T08:08:08.000Z`，每期間隔為 2 天
+
+```
+ |     epoch 1     |     epoch 2     |     epoch 3     |     epoch 4     |
+ |-----10token-----|-----10token-----|-----10token-----|-----10token-----|----------
+ S              S+2days           S+4days           S+6days           S+8days
+```
+
+假如現在在 epoch N 的時間區段中，則直接扣款方就可以收取 epoch 1 ~ N 該扣到的款項，也就是可以累積，但不應會超過收取或重複
+
+而假如扣款方的第一次扣款在 `2019-01-05T08:08:08.000Z` (S+4days) 這一瞬間，則一次可以扣款到 30 token，等於滿足到了 epoch 3，下次扣款只能在最早 `2019-01-07T08:08:08.000Z` (S+6days) 之後，也就是 epoch 4
+
+---
+
+扣款方在直接扣款的操作中:
+
+- `withdrawDirectDebit(address)` 為扣款方指定被扣款方並進行扣款的操作，並會觸發 `Transfer(address,address,uint256)` 事件
+
+```
+function withdrawDirectDebit(address debtor) public returns (bool) {
+  require(isDirectDebitEnable);
+
+  Account storage debtorAccount = accounts[debtor];
+  DirectDebit storage debit = debtorAccount.instruments[msg.sender].directDebit;
+
+  uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
+  uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
+
+  require(amount > 0);
+
+  debtorAccount.balance = debtorAccount.balance.sub(amount);
+  accounts[msg.sender].balance += amount;
+  debit.epoch = epoch;
+
+  emit Transfer(debtor, msg.sender, amount);
+
+  return true;
+}
+```
+
+---
+
+一旦代幣擁有者想要撤銷某個地址的定期直接扣款，則直接將 `directDebit` 移除即可
+
+- `TerminateDirectDebit(address,address)` 為代幣擁有者撤銷直接扣款權力時所發射的事件，透過 `terminateDirectDebit(address)` 觸發
+- `terminateDirectDebit(address)` 為代幣擁有者撤銷直接扣款時的操作
+
+```
+event TerminateDirectDebit(address indexed debtor, address indexed receiver);
+
+function terminateDirectDebit(address receiver) public returns (bool) {
+  delete accounts[msg.sender].instruments[receiver].directDebit;
+
+  emit TerminateDirectDebit(msg.sender, receiver);
+
+  return true;
+}
+```
+
+#### 一次性大量操作:
+
+一次性的多個傳送代幣
 
 - `transfer(uint256[])` 為一次性傳送代幣給多個對象時所作的操作
 - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
@@ -616,6 +737,59 @@ function transfer(uint256[] data) public returns (bool) {
   senderAccount.balance = senderAccount.balance.sub(totalValue);
 
   return true;
+}
+```
+
+---
+
+一次性的多個直接扣款
+
+- `WithdrawDirectDebitFailure(address,address)` 為當一次性多個直接扣款中，`strict = true` 時所發動的事件
+- `withdrawDirectDebit(address[],bool)` 為扣款方要一次性多個直接扣款時，要填入 `address[] debtors` 被扣款方們的地址陣列，並且選擇 `bool strict`
+
+`strict` 為 `true` 表示當其中一個人直接扣款失敗時，整個操作都會失敗，並 `revert()`
+
+如 `strict` 為 `false` 表示有人失敗則發射 `WithdrawDirectDebitFailure(address,address)` 事件，而不中斷面向其他帳戶的直接扣款，方便鏈外環境可以偵測問題，  
+並且為了正確顯示在區塊鏈瀏覽器上，任何成功的直接扣款都必須發射 `Transfer(address,address,uint256)` 事件
+
+```
+event WithdrawDirectDebitFailure(address indexed debtor, address indexed receiver);
+
+function withdrawDirectDebit(address[] debtors, bool strict) public returns (bool result) {
+  require(isDirectDebitEnable);
+
+  Account storage receiverAccount = accounts[msg.sender];
+  result = true;
+  uint256 total;
+
+  for (uint256 i = 0; i < debtors.length; i++) {
+    address debtor = debtors[i];
+    Account storage debtorAccount = accounts[debtor];
+    DirectDebit storage debit = debtorAccount.instruments[msg.sender].directDebit;
+
+    uint256 epoch = (block.timestamp.sub(debit.info.startTime) / debit.info.interval).add(1);
+    uint256 amount = epoch.sub(debit.epoch).mul(debit.info.amount);
+
+    require(amount > 0);
+
+    uint256 debtorBalance = debtorAccount.balance;
+
+    if (amount > debtorBalance) {
+      if (strict) {
+        revert();
+      }
+      result = false;
+      emit WithdrawDirectDebitFailure(debtor, msg.sender);
+    } else {
+      debtorAccount.balance = debtorBalance - amount;
+      total += amount;
+      debit.epoch = epoch;
+
+      emit Transfer(debtor, msg.sender, amount);
+    }
+  }
+
+  receiverAccount.balance += total;
 }
 ```
 
@@ -831,7 +1005,26 @@ function increaseNonce() public returns (bool) {
 
 ### Tokenisation (代幣化) 補強
 
-對於一個良好的金流服務、健康的代幣化所做出的一個修正，就是傳送代幣不應該花上以太幣，而即使 **Account Abstraction** 出來了之後，也會因由服務提供者自行承擔以太坊成本而容易形成硬成本，造成商業擴張的困難。
+對於一個金流而言，一定有來源跟目的地，以及提出金流請求是哪一方，來源可以數個，目的地也可以數個。我們可以得出以下最粗糙的 8 種金流組合:
+
+1. 來源請求，一個來源，一個目的地
+   > ERC-20 的 `transfer(addres,uint256)` 即可解決
+2. 來源請求，一個來源，多個目的地
+   > 一次性的多重傳送代幣 `transfer(uint256[])` 即可解決
+3. 來源之一請求，多個來源，一個目的地
+   > 假如因為其中一個來源請求，就可以觸發多個來源一起傳給多個目的地，想必來源間一定是有授權的，所以這要用智能合約解決。透過做出一個 Escrow Box (履約保證、交割保證箱) ，這種智能合約跟 `transferAndCall` 是非常搭配的，因為會有很多傳送代幣了之後還要觸發的情境
+4. 來源之一請求，多個來源，多個目的地
+   > 同 **3.**，因為需要來源間的授權，搭配一次性的傳送給多個目的地的功能，即可達成
+5. 目的地請求，一個來源，一個目的地
+   > 可以是 ERC-20 的 `approve(address,uint256)` 與 `transferFrom(address,address,uint256)` 搭配使用，因為想必也是得需要來源的授權的，也就是 `approve` 這個動作。但假如有週期性的被動需求，就要使用 `withdrawDirectDebit(address)` 了
+6. 目的地之一請求，一個來源，多個目的地
+   > 同 **3.**，因為需要來源的授權，搭配一次性的傳送給多個目的地的功能，即可達成
+7. 目的地請求，多個來源，一個目的地
+   > 一次性的多重直接扣款即可，`withdrawDirectDebit(address[],bool)`
+8. 目的地之一請求，多個來源，多個目的地
+   > 同 **3.**，因為需要來源間的授權，搭配一次性的傳送給多個目的地的功能，即可達成
+
+最後，就是對於金流服務所做出的一個修正，也就是傳送代幣不應該花上以太幣，而即使 **Account Abstraction** 出來了之後，也會因由服務提供者自行承擔以太坊成本而容易形成硬成本，造成商業擴張的困難。
 
 所以讓「自願者」能出來協助轉發交易才是首要重點。  
 自願者，也就是轉發者 (Relayer) 必須要能自行挑選正常、無錯的代幣傳送請求，並代為發送至鏈上，再讓智能合約檢查代幣傳送者指定了哪些事物，轉發者又做了哪些調整，要避免代幣傳送者攻擊轉發者，反之也要避免轉發者攻擊代幣傳送者。
@@ -866,7 +1059,7 @@ function increaseNonce() public returns (bool) {
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
 經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試  
-原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinStandard/MinServiceFriendlyToken.sol
+原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/ServiceFriendlyToken.sol
 
 ## Implementation
 
