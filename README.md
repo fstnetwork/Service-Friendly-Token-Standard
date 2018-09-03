@@ -48,15 +48,22 @@ To define a service-friendly environment, we must first identify the design goal
 
 The payment flow of an Ethereum transaction:
 
-![graph 1](https://mermaidjs.github.io/mermaid-live-editor/#/view/eyJjb2RlIjoiZ3JhcGggTFJcblxuRUEoKEVBKSlcbkNBMSgoQ0EgMSkpXG5DQTIoKENBIDIpKVxuQ0EzKChDQSAzKSlcbkEoKEEpKVxuXG5FQSAgLS0tIFoxW3R4XVxuWjEgIC0tPiBDQTFcbkNBMSAtLS0gWjJbbXNnXVxuWjIgIC0tPiBDQTJcbkNBMiAtLS0gWjNbbXNnXVxuWjMgIC0tPiBDQTNcbkNBMyAtLi0gWjRbbXNnXVxuWjQgIC0uLT4gQSIsIm1lcm1haWQiOnsidGhlbWUiOiJkZWZhdWx0In19)
+```
+(EA) --[tx]-> (CA 1) --[msg]-> (CA 2) --[msg]-> ... --[msg]-> (A)
+```
 
 The payment flow of a ERC20 Token transaction:
 
-![graph 2](https://mermaidjs.github.io/mermaid-live-editor/#/view/eyJjb2RlIjoiZ3JhcGggTFJcblxuRUEoKEVBKSlcbkExKChBKSlcblxuRUEgLS0tIFoxW3RyYW5zZmVyXVxuWjEgLS0-IEExIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifX0)
+```
+(EA) --[transfer]-> (A)
+```
 
 or
 
-![graph 3](https://mermaidjs.github.io/mermaid-live-editor/#/view/eyJjb2RlIjoiZ3JhcGggTFJcblxuRUExKChFQSkpXG5DQTEoKENBKSlcblxuRUEyKChFQSkpXG5DQTIoKENBKSlcblxuRUExIC0tLSBaMVthcHByb3ZlXVxuWjEgIC0tPiBDQTFcblxuRUEyIC0tLSBaMltjYWxsXVxuWjIgIC0tPiBDQTJcbkNBMiAtLS0gWjNbdHJhbnNmZXJGcm9tIEVBXVxuWjMgIC0tPiBBMSgoQSkpIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifX0)
+```
+(EA) ---[approve]-> (CA)
+(EA) ------[call]-> (CA) --[transferFrom EA]-> (A)
+```
 
 > EA represents External Account  
 > CA represents Contract Account  
