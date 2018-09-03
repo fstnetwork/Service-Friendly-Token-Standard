@@ -15,7 +15,6 @@ requires: 20
 ## Simple Summary
 
 <!--"If you can't explain it simply, you don't understand it well enough." Provide a simplified and layman-accessible explanation of the EIP.-->
-<!-- A standard interface for service-friendly tokens, which aims for a grounded代幣化environment for business. -->
 
 This Token standard is designed to allow Tokens to interact with service-based smart contracts and off-chain services seamlessly and without friction, providing a friendly environment for the Tokens.
 
@@ -23,11 +22,11 @@ This Token standard is designed to allow Tokens to interact with service-based s
 
 <!--A short (~200 word) description of the technical issue being addressed.-->
 
-Originally designed to be a crowdfunding tool, Tokens now have a painful period of transition to being a Utility Token, to provide their service to the token holders. Many projects and companies lack sufficient Smart Contract functionalities in their Tokens, which makes it difficult to support the fundamentals of their business venture and to apply it to real-world services and products.
+Originally designed to be a crowdfunding tool, Tokens now have a painful period of transition to being a Utility Token, to provide their service to the Token holders. Many projects and companies lack sufficient Smart Contract functionalities in their Tokens, which makes it difficult to support the fundamentals of their business venture and to apply it to real-world services and products.
 
 The following interface designs are based on the fundamental features and aspects of a **Robust Tokenisation** that businesses need. This including removing the difficulties of secure bindings among smart contracts and on-chains and off-chains integration. We, FundersToken based on our experience, understanding of the Token Standards that are available in the market, FundersToken have made several improvements on the Token Standards aiming to build a Native Token Environment, a friendly environment for Tokens.
 
-FundersToken have also developed a **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and releases end-users from the need and limitation of only using Ether as transaction fee (gas fee) when making a token transfer.
+FundersToken have also developed a **Token transfer relay**, which simulates blockchains in the form of smart contracts for the Tokens, and releases end-users from the need and limitation of only using Ether as transaction fee (gas fee) when making a Token transfer.
 
 ## Motivation
 
@@ -35,9 +34,9 @@ FundersToken have also developed a **Token transfer relay**, which simulates blo
 
 We categorise this interface standard to the following:
 
-1.  [The improvements made on ERC-20](#erc-20-補強)
-2.  [The improvements made to make a Token service-friendly](#service-friendly-服務友善化-補強)
-3.  [The improvements for Robust Tokenisation](#tokenisation-代幣化-補強)
+1.  [The improvements made on ERC-20]()
+2.  [The improvements made to make a Token service-friendly]()
+3.  [The improvements for Robust Tokenisation]()
 
 As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible and viable direction, however due to different implementations, such as gas consumption and mathematical safety of execution, many Tokens have suffered abuse and denial-of-service that led to financial loss.
 
@@ -68,7 +67,7 @@ CA3 -.- Z4[msg]
 Z4  -.-> A
 ```
 
-The payment flow of a ERC20 token transaction:
+The payment flow of a ERC20 Token transaction:
 
 ```mermaid
 graph LR
@@ -110,7 +109,7 @@ Most of the current Token standards have difficulties to compose multiple contin
 
 From the statement above, we can see the Tokens are less direct and dynamic compared to Ether. Since Tokens are driven by smart contracts, Tokens must follow the execution process of the Ethereum transaction, which means the recipient address of a Token transfer transaction is the Token smart contract instead of `to` in `transfer`. The process and implementation of the Token `transfer` is not intuitive as Ether's transfer.
 
-And because the Token ledger is within the smart contract of the token, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorize or approve external smart contracts to extend the logic that is related to the ledger. But the former option slows down the development cycle, the latter option will increase the execution cost and security risks.
+And because the Token ledger is within the smart contract of the Token, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorise or approve external smart contracts to extend the logic that is related to the ledger. But the former option slows down the development cycle, the latter option will increase the execution cost and security risks.
 
 We had experienced the inconvenience during the development of smart contract module and providing modularisation services. Our goal is to make the Token payment flow described  below:
 
@@ -131,7 +130,7 @@ Moreover, what was mentioned above is not only to increase the consistency and t
 
 ---
 
-As the improvement made for tokenisation, it is based after our service-friendly Token, and we took a step further to conduct important features for businesses such as CRM functionality and Token relay to achieve a De-Ether environment.
+As the improvement made for Tokenisation, it is based after our service-friendly Token, and we took a step further to conduct important features for businesses such as CRM functionality and Token relay to achieve a De-Ether environment.
 
 The important feature for CRM is compacting multiple Token transfers and making the process as light and predictable as possible, which allows businesses to have more flexibility for CRM applications.
 
@@ -139,8 +138,8 @@ The Token relay is to remove the biggest technical barrier, which is the need fo
 If the situation is in a context of  that Ethereum is a decentralised computing platform and cash platform, and to execute smart contracts, the end-users must pay Ether to stablise the Ethereum network and incentivise the miners to sustain the network, then it's very rational and acceptable to everyone.  
 But if it is in the context of Tokens, it becomes illogical and cloggy.
 
-The idea of "No Ether, No Token usages" obstructs the utility of tokenisation.  
-So we have implemented a feature that allows the origin of a token transfer to sign a specific **Token transfer request**, and the **Relayers** check its transfer fee (in Token) and the signature then the Relayers relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
+The idea of "No Ether, No Token usages" obstructs the utility of Tokenisation.  
+So we have implemented a feature that allows the origin of a Token transfer to sign a specific **Token transfer request**, and the **Relayers** check its transfer fee (in Token) and the signature then the Relayers relay the request by sending the request to the Token smart contract, which also means the Relayers pay the ETH transaction gas for the request.  
 Then the Token smart contract checks the relayed transfers and avoid any attack among transfer origin, relayers and the receivers.
 
 Further details are in the next section.
@@ -330,7 +329,7 @@ In `Instrument` ,
 
 _`DirectDebit directDebit` shows the detail of agreement which the Token holder allows withdrawal by other holders on a particular date in a designated time-frame._
 
-_`DirectDebit` is a demonstration of data between token holders that can be placed in Instrument. It is not included in this standard, but it is included in the full version of Service-Friendly Token Standard._
+_`DirectDebit` is a demonstration of data between Token holders that can be placed in Instrument. It is not included in this standard, but it is included in the full version of Service-Friendly Token Standard._
 
 ```
 struct Instrument {
@@ -351,9 +350,9 @@ mapping(address => Account) internal accounts;
 
 #### Mutable Token basic info:
 
-- `totalSupply()` is the total supply of token issued.
-- `balanceOf(address)` allows token holders to check their total balance.
-- `allowance(address,address)` allows token holders to check the quota of Tokens that the Token holder that have authorised other holders to have access to.
+- `totalSupply()` is the total supply of Token issued.
+- `balanceOf(address)` allows users to check their total balance.
+- `allowance(address,address)` allows users to check the quota of Tokens that the Token holder that have authorised other holders to have access to.
 - `address issuer` is the address of the Token issuer, although this is not a requirement for the ERC-20 standard, however this information is required for inspection in several actions.
 
 ```
@@ -374,8 +373,8 @@ address public issuer;
 
 #### Events of the Token:
 
-- `Transfer(address,address,uint256)` is the event that triggers any change in the amount of token.
-- `Approval(address,address,uint256)` is the event where Token holder authorize access to different Token holders.
+- `Transfer(address,address,uint256)` is the event that triggers any change in the amount of Token.
+- `Approval(address,address,uint256)` is the event where Token holder authorise access to different Token holders.
 
 ```
 event Transfer(address indexed from, address indexed to, uint256 value);
@@ -449,12 +448,12 @@ When `erc20ApproveChecking` is `true`, `approve(address,uint256)` will do extra 
 
 #### More secure Token:
 
-- `bool erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查,預設為 `false`,只有 `issuer` 才能更動
-- `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件,需要透過 `setERC20ApproveChecking(bool)` 引發
-- `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`,通過驗證才能繼續改變 `allowance`
-- `increaseAllowance(address,uint256)` 可直接增加 `allowance`
-- `decreaseAllowance(address,uint256,bool)` 可直接減少 `allowance`,而當 `strict` 為 `true` 時,會用 `Math` 進行減法檢查
-- `spendableAllowance(address,address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
+- `bool erc20ApproveChecking` is a toggle to activate extra checks for `approve`, the value is `false` by default, and only `issuer` can change this value.
+- `SetERC20ApproveChecking(bool)` is an event emitted when `erc20ApproveChecking` is changed via `setERC20ApproveChecking(bool)`.
+- `approve(address,uint256,uint256)` is an `approve` that requires `expectedValue` before assigning new `allowance`
+- `increaseAllowance(address,uint256)` can directly increment `allowance`
+- `decreaseAllowance(address,uint256,bool)` can directly decrease `allowance`, and when `strict` is `true`, it will do the substraction via `Math` library.
+- `spendableAllowance(address,address)` provides the `Math.Min` of the balance of the Token holder and the allowance for the `spender`.
 
 <details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
 
@@ -529,37 +528,37 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 ### The improvements made to make a Token service-friendly
 
-索引:
+Index:
 
-1. [Transfer and call (傳送呼叫)](#transfer-and-call-傳送呼叫)
+1. [Transfer and call]()
 
 ---
 
-#### Transfer and call (傳送呼叫):
+#### Transfer and call:
 
-為了讓傳送代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成,能讓這些呼叫可以連續地一個串一個串下去,並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`,對於參數的檢查與覆蓋就會變得非常嚴格
+To make Token transfer and calling `receivcerContract` in one go, and to make these calls chainable and trustworthy, which guarantees that `value` and `msg.sender` are secured by the Token smart contract, hence the arguments checks and the replacement in Token smart contract will be very strict.
 
-在 `transferAndCall(address,uint256,bytes)` 的參數中
+In `transferAndCall(address,uint256,bytes)`,
 
-- `address to` 為接收者智能合約的位址
-- `uint256 value` 為代幣傳送量,與 `transfer` 的一樣意義
-- `bytes data` 為後續所有連續動作都需要的參數資料,與 `to.call(data)` 搭配使用,`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
+- `address to` is the address of the `receiverContract`.
+- `uint256 value` is the Token value to be transferred.
+- `bytes data` is the calldata for all the post continuous processes, which is used with `to.call(data)`, including `fuction signature`, `value` and `msg.sender`
 
-並且因為 `data` 最少要包含要傳遞給接收者智能合約的資料,故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
+Because `data` must contain the calldata to the `receiverContract`, the length would be at least **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**.
 
-也會進行下列檢查
+And do the checks below:
 
-- 禁止 `to` 為合約本身
-- 檢查 `data` 的長度需大於等於 68 bytes
-- 檢查確定代幣傳送已經完成
+- `to` must not be Token smart contract itself.
+- The length of `data` must be equal or longer than 68 bytes
+- The Token transfer is successful before calling `receiverContract`
 
-以及對於 data 的前兩個參數進行強制覆蓋,讓 `data` 中必定是
+Then replace first two arguments in `data` by force, the original `data` must be in the form:
 
 ```
-[4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]
+[4 bytes signature][32 bytes value][32 bytes msg.sender][other calldata.....]
 ```
 
-故意讓 `uint256 value` 先而 `address sender` (`address from`) 後的原因為,不與 `address to` + `uint256 value` 的組合順序搞混
+We put `uint256 value` before `address sender` (`address from`) to not be confused by `address to` + `uint256 value` pair.
 
 ```
 // Token Contract (TokenA, decimals = 18)
@@ -587,8 +586,8 @@ function transferAndCall(
 }
 ```
 
-以及,接收者智能合約的函數就需要配合前兩個參數為 `uint256 value` 以及 `address from`  
-範例:
+Also, the method in the receiverContract must have first two arguments that match `uint256 value` and `address from` order.  
+For instance:
 
 ```
 // Receiver Contract (Vendor machine, sells TokenB)
@@ -607,9 +606,9 @@ function purchase(
 }
 ```
 
-所以要使終端使用者可以用 100 TokenA 購買 TokenB 時,只要能編碼下列 tx input,簽署並送出即可
+And for another instance, to allow end-users purchase some TokenB in 100 TokenA, just encode the tx input below, and let it be signed and broadcast.
 
-假設 `msg.sender` (`from`) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`,也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
+Assume that `msg.sender` (`from`) is `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`, and the `receiverContract` (VendorMachine) is `0x1234567890123456789012345678901234567890`:
 
 ```
 transferAndCall(
@@ -618,7 +617,7 @@ transferAndCall(
   "0xae77c23700000000000000000000000083b21dbd0e60b9709d647de183f5ae0c31b54c2a0000000000000000000000000000000000000000000000056bc75e2d63100000");
 ```
 
-或者擺隨意的 bytes 在後面,但 signature 不能影響到 ( `"0x" + keccak256("purchase(uint256,address)")[0~7]` = `0xae77c237` )
+Or place arbitrary bytes after the function signature ( `"0x" + keccak256("purchase(uint256,address)")[0~7]` = `0xae77c237` )
 
 ```
 transferAndCall(
@@ -629,23 +628,23 @@ transferAndCall(
 
 ### The improvements for Robust Tokenisation
 
-索引:
+Index:
 
-1. [一次性多個傳送代幣](#一次性多個傳送代幣)
-2. [代幣傳送委派、代幣轉發](#代幣傳送委派代幣轉發)
+1. [Multiple Token transfer]()
+2. [Delegated Token transfer and call]()
 
 ---
 
-#### 一次性多個傳送代幣
+#### Multiple Token transfer
 
-- `transfer(uint256[])` 為一次性傳送代幣給多個對象時所作的操作
-- `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
+- `transfer(uint256[])` allows Token holders to transfer Token to multiple recipients in one single transaction.
+- `uint256[] data` in `transfer(uint256[])` consists of the elements (`uint256`) that each forms in **20 bytes recipientAddress + 12 bytes value**
 
-為減少所需要帶上的參數,我們將接收者位址 (receviers) 跟 代幣傳送量 (values) 合在了一起,在一個 32 bytes 的 `uint256` 數字裡面就能紀錄接收者地址與代幣傳送量
+We merge the recipient and value into one `uint256` in order to compact the multiple transfers.
 
-只不過 12 bytes 能紀錄的量對於 decimals = 18 的代幣而言,就不能傳太過於大的數字了,但至少對每個接收者也有 79,228,162,514.264337593543950335 個代幣可傳 (已經經過了 decimals 的處理以便人類理解)),以一個健康的代幣而言已經超越總代幣發行量,也就是 `0xffffffffffffffffffffffff / (10 ** 18)`
+Although now each recipient can only receive 12 bytes `uint`, but for the Token that has `18 decimals` is very ample, because it can represent 79,228,162,514.264337593543950335 Token in maximum, which is far more than the sane `totalSupply` of a Robust Tokenisation. `0xffffffffffffffffffffffff / (10 ** 18)`
 
-並且為了正確顯示在區塊鏈瀏覽器上,必須每個 `Transfer(address,address,uint256)` 事件都要射出,然後也為了優化 storage 的讀寫,最後才會將所花上的餘額寫入代幣擁有者的餘額中
+And to be correctly displayed on Blockchain explorers, every `Transfer(address,address,uint256)` must be emitted, and to optimise the I/O of the balance storage, the final result of the Token sender is set in the end of the multiple Token transfer.
 
 ```
 function transfer(uint256[] data) public returns (bool) {
@@ -668,14 +667,14 @@ function transfer(uint256[] data) public returns (bool) {
 }
 ```
 
-#### 代幣傳送委派、代幣轉發:
+#### Delegated Token transfer and call:
 
-此為代幣化關鍵的一個介面,讓代幣的傳送不再需要以太幣當作手續費,而是以也付代幣當作手續費的轉變
+This is the key component of a Robust Tokenisation, allowing the Token transfer to pay the fee in the Token but not to pay Ethereum Gas Fee anymore.
 
-代幣轉發也是一個可以開啟或關閉的功能:
+This delegation is also toggleable:
 
-- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟代幣轉發功能,預設為 `false`,只有 `issuer` 才能更動
-- `SetDelegate(bool)` 為 `isDelegateEnable` 改變時會發射的事件,需要透過 `setDelegate(bool)` 引發
+- `bool isDelegateEnable` is a toggle to activate delegation, the value is `false` by default, and only `issuer` can change this value.
+- `SetDelegate(bool)` 為 `isDelegateEnable` is an event emitted when `isDelegateEnable` is changed via `SetDelegate(bool)`.
 
 ```
 bool public isDelegateEnable;
@@ -692,20 +691,19 @@ function setDelegate(bool delegate) public {
 
 在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
-- `uint256 nonce` 代表此被委派的傳送是第幾個傳送,這是為了防止雙花攻擊
-- `uint256 fee` 代表代幣傳送者 (Token transfer origin) 願意給轉發者 (Relayer) 多少代幣當作手續費
-- `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量,使轉發者可以事先檢查並且不受浪費攻擊
-- `address to` 代表代幣傳送的接收者地址,可以為智能合約地址
-- `uint256 value` 代幣傳送量,與 `transfer(address,uint256)` 中的 `value` 的意義一樣
-- `bytes data` 與 `transferAndCall(address,uint256,bytes)` 中的 `data` 的意義一樣
-- `DelegateMode mode` 代表為代幣傳送者想要指定轉發者及指定誰可收取 `fee` 的委派模式
-- `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
-- `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
-- `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
+- `uint256 nonce` is the count of the transfer of the Token holder (Token transfer origin).
+- `uint256 fee` is the Token transfer fee for the relayer set by the Token transfer origin.
+- `uint256 gasAmount` is the gas amount set by the Token transfer origin to avoid wasting attack.
+- `address to` is the address of the recipient.
+- `uint256 value` is same as the `value` in `transfer(address,uint256)`.
+- `bytes data` is same as the `data` in `transferAndCall(address,uint256,bytes)`.
+- `DelegateMode mode` sets the delegation mode to define who can receive the Token transfer fee.
+- `uint8 v` is the `v` in the ECDSA signature signed by the origin of the Token transfer.
+- `bytes32 r` is the `r` in the ECDSA signature signed by the origin of the Token transfer.
+- `bytes32 s` is the `s` in the ECDSA signature signed by the origin of the Token transfer.
 
-代幣傳送者需要在鏈下先編織好以上的資訊並且簽署才能將參數們交給轉發者,鏈外部份的實作將會以參考的方式補充進來,而非有硬性要求
-
-資料的簽署方法為
+The origin of the Token transfer needs to compose the information described above and sign them, then send the information ot the relayers.  
+The implementation of off-chain part is not restricted, but the spec of the signature must follow the way below:
 
 ```
 ECDSA_Sign(
@@ -725,12 +723,12 @@ ECDSA_Sign(
 )
 ```
 
-`DelegateMode` 則有以下幾種:
+There are 4 modes for `DelegateMode`:
 
-- `PublicMsgSender` 代表是任何人都可以是轉發者,並且`fee` 是將給 `msg.sender`
-- `PublicTxOrigin` 代表是任何人都可以是轉發者,並且`fee` 是將給 `tx.origin`
-- `PrivateMsgSender` 代表是代幣傳送者指定了轉發者,並且`fee` 是將給 `msg.sender`
-- `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者,並且`fee` 是將給 `tx.origin`
+- 0: `PublicMsgSender` represents everyone can be the relayer, and the `fee` will be transferred to `msg.sender` in the delegation.
+- 1: `PublicTxOrigin` represents everyone can be the relayer, and the `fee` will be transferred to `tx.origin` in the delegation.
+- 2: `PrivateMsgSender` represents the origin of the Token transfer has assigned a specific relayer, and the `fee` will be transferred to `msg.sender` in the delegation.
+- 3: `PrivateTxOrigin` represents the origin of the Token transfer has assigned a specific relayer, and the `fee` will be transferred to `tx.origin` in the delegation.
 
 <details><summary>DelegateTransferAndCall Soucre Code</summary>
 
@@ -829,9 +827,9 @@ function delegateTransferAndCall(
 
 ---
 
-查看 nonce:
+Check the `nonce`:
 
-- `nonceOf(address)` 可查找任何帳戶的 nonce
+- `nonceOf(address)` allows users to check the nonce of their accounts.
 
 ```
 function nonceOf(address owner) public view returns (uint256) {
@@ -839,10 +837,10 @@ function nonceOf(address owner) public view returns (uint256) {
 }
 ```
 
-而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救,進行強制覆蓋,故須 nonce 方面的操作
+If the origin of the Token transfer needs to cancel the mis-sent Token transfer, it can be cancelled by manually increasing the nonce of the orign.
 
-- `IncreaseNonce(address,uint256)` 為 nonce 增加時所發射的事件,唯有 `delegateTransferAndCall()` 與 `increaseNonce()` 觸發
-- `increaseNonce()` 為代幣傳送者手動增加 nonce 之操作
+- `IncreaseNonce(address,uint256)` is an event emitted when the `nonce` increases via `delegateTransferAndCall()` and `increaseNonce()`.
+- `increaseNonce()` allows the Token holder (the origin of the Token transfer) to manually increase the nonce to make mis-sent Token transfer failed.
 
 ```
 event IncreaseNonce(address indexed from, uint256 nonce);
@@ -862,15 +860,15 @@ We will summarise and add in the details in the following.
 
 As ERC-20 only specifies the interface and has lack the requirements and suggestion for real-world practices. While building on top of the ERC-20 standard, we have encountered a few challenges and after finding the solution, we decided to infuse our solution into this standard. For entreprise users and Token end-users, a vivid operating logic and low-cost is a must, with that in mind, we have implemented several optimisation for storage. Taking `accounts` as an example, we have changed the mapping of accounts to only read the struct of the reference and only to take the necessary data, by doing this, the process would be lighter compared to read the all accounts-related mappings.
 
-We have also made improvements on security, specifically on preventing front-running attack by the `spender`, when the token holder is assigning `allowance`. If this process is not checked, the process of assigning `allowance` from 1,000 to 500, in a front-running attack scenario, the attacker would first spend 1,000 that was previously assigned, and as the token holder  approve another 500, making the `allowance`: **1,000 -> 0 -> 500**.
+We have also made improvements on security, specifically on preventing front-running attack by the `spender`, when the Token holder is assigning `allowance`. If this process is not checked, the process of assigning `allowance` from 1,000 to 500, in a front-running attack scenario, the attacker would first spend 1,000 that was previously assigned, and as the Token holder  approve another 500, making the `allowance`: **1,000 -> 0 -> 500**.
 
-In a safer environment, the requirement before approve a new value, at least under the ERC-20 interface, the `allowance` would return to 0. While this mechanism makes it safer, but this would mean that 2 Ethereum transactions would be needed. However we would suggest to utilize the interface of `expectedValue`, as both `increaseAllowance` and `decreaseAllowance` are in risk of front-running attack.
+In a safer environment, the requirement before approve a new value, at least under the ERC-20 interface, the `allowance` would return to 0. While this mechanism makes it safer, but this would mean that 2 Ethereum transactions would be needed. However we would suggest to utilise the interface of `expectedValue`, as both `increaseAllowance` and `decreaseAllowance` are in risk of front-running attack.
 
 ### The improvements made to make a Token service-friendly
 
 First of all, we intentionally named the function as `transferAndCall`, instead of function overload, that is because the definition of `transfer` is from one account to another account, sometimes even a smart contract, which is logical, as some kinds of the procedures must first sent to the smart contract, awaiting for the next step (the next transaction).
 
-However if we prohibit ERC-20 `transfer` just because of too many tokens are sent to a smart contract that are unable to transfer the token, it would be putting the cart before the horse. As this is not the fault of ERC-20 but the fault of the one who transfers the tokens and the service provider.
+However if we prohibit ERC-20 `transfer` just because of too many Tokens are sent to a smart contract that are unable to transfer the Token, it would be putting the cart before the horse. As this is not the fault of ERC-20 but the fault of the one who transfers the Tokens and the service provider.
 
 We intentionally used a different terms to express different functionality, most importantly different aims and different motives. Because we wanted to make Token-related transaction and transfer process to be intuitive and easy to plan, we have allow the mechanism for receiving smart contract to perform continuous actions and to replace the original calldata with the correct calldata by force, thus no one would be able to abuse any resources.
 
@@ -880,24 +878,24 @@ This is why this section is called **Service-Friendly**, because a Service-Frien
 
 ### The improvements for Robust Tokenisation
 
-The last modification that we did to improve the flow of payment is to removing the need of paying Ether to make a token transfer. Although the concept of **Account Abstraction** is set to release in the near future, however in the concept of Account Abstraction, the service provider is the one who carries the burden of paying Ether, and this action will bring hard-cost to the business, making it hard to scale.
+The last modification that we did to improve the flow of payment is to removing the need of paying Ether to make a Token transfer. Although the concept of **Account Abstraction** is set to release in the near future, however in the concept of Account Abstraction, the service provider is the one who carries the burden of paying Ether, and this action will bring hard-cost to the business, making it hard to scale.
 
-A **volunteer**, also known as a **Relayer** must be able to voluntarily pick a normal, non-error token transfer request and relay it to the Ethereum blockchain, then via smart contract to confirm and check what object was specified and what modification was made by the relayer, just to make sure the origin of the token transfer won't be able to attack the relayer and the relayer won't be able to attack the origin of the token transfer.    
+A **volunteer**, also known as a **Relayer** must be able to voluntarily pick a normal, non-error Token transfer request and relay it to the Ethereum blockchain, then via smart contract to confirm and check what object was specified and what modification was made by the relayer, just to make sure the origin of the Token transfer won't be able to attack the relayer and the relayer won't be able to attack the origin of the Token transfer.    
 
 The list below shows the potential attack and the solution for the attacks:
 
-1. Relayer repeatedly sends token transfer request or broadcast a wrong token transfer to the token smart contract.
-   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce()`. Even when the token transfer request has failed, `nonce` will increase regardless.
-2. Relayer took the token transfer request and send it to another Token smart contract with the same `nonce`
-   > Can be solved by adding data of `tokenAddress` into signature
-3. The origin of the token transfer wasting Relayer's Ethereum Gas fee.
-   > This can be solved by adding the data for `gasAmount` into the signature, in a scenario where the origin of the token transfer provides a very small incentive to the relayer, the relayer will be able to see it from the start, hence will be able to drop the request.
-   > And also, to make sure this type of attack will inevitably fail, and to ensure relayer to get the `fee` for the transfer, thus even in a scenario of a failed token transfer request, it'd be sent regradless. Meaning that the origin of the token transfer should check the condition before making the token transfer, by doing so, it'd also prevent relayer to waste resources conversely. Similar to what Ethereum is doing.
-4. Relayer collected token `fee` yet assigned insufficient Ethereum gas fee, leaving the operations to be half done.
-   > Add data of `gasAmount` to the signature, because the origin of the token transfer has defined this number, hence this is solvable, even if the number is wrong, we can still fix this issue similar to **scenario 1.**. In a worst case scenario, the transaction will fail due to insufficient gas fee, which itself is solvable.
+1. Relayer repeatedly sends Token transfer request or broadcast a wrong Token transfer to the Token smart contract.
+   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce()`. Even when the Token transfer request has failed, `nonce` will increase regardless.
+2. Relayer took the Token transfer request and send it to another Token smart contract with the same `nonce`
+   > Can be solved by adding data of `TokenAddress` into signature
+3. The origin of the Token transfer wasting Relayer's Ethereum Gas fee.
+   > This can be solved by adding the data for `gasAmount` into the signature, in a scenario where the origin of the Token transfer provides a very small incentive to the relayer, the relayer will be able to see it from the start, hence will be able to drop the request.
+   > And also, to make sure this type of attack will inevitably fail, and to ensure relayer to get the `fee` for the transfer, thus even in a scenario of a failed Token transfer request, it'd be sent regradless. Meaning that the origin of the Token transfer should check the condition before making the Token transfer, by doing so, it'd also prevent relayer to waste resources conversely. Similar to what Ethereum is doing.
+4. Relayer collected Token `fee` yet assigned insufficient Ethereum gas fee, leaving the operations to be half done.
+   > Add data of `gasAmount` to the signature, because the origin of the Token transfer has defined this number, hence this is solvable, even if the number is wrong, we can still fix this issue similar to **scenario 1.**. In a worst case scenario, the transaction will fail due to insufficient gas fee, which itself is solvable.
 
-We have considered all possible scenarios of attacks during our implementation and practices to ensure that we have a robust token relay model up and running.  
-In other words, relayers will compete each other, thus providing a higher Ether gas price, making the token transfer request to be confirmed faster, that is also we have emphasises on the design and improvement of `fee` and `gasAmount` because only via a fair mechanism we can attract relayers to relay token transfers and allow them to earn tokens and enable token holders to enjoy a faster token verification, making it a win-win situation.
+We have considered all possible scenarios of attacks during our implementation and practices to ensure that we have a robust Token relay model up and running.  
+In other words, relayers will compete each other, thus providing a higher Ether gas price, making the Token transfer request to be confirmed faster, that is also we have emphasises on the design and improvement of `fee` and `gasAmount` because only via a fair mechanism we can attract relayers to relay Token transfers and allow them to earn Tokens and enable Token holders to enjoy a faster Token verification, making it a win-win situation.
 
 ### Conclusion
 
