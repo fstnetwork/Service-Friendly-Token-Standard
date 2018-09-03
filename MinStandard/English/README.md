@@ -34,9 +34,9 @@ FundersToken have also developed a **Token transfer relay**, which simulates blo
 
 We categorise this interface standard to the following:
 
-1.  [The improvements made on ERC-20]()
-2.  [The improvements made to make a Token service-friendly]()
-3.  [The improvements for Robust Tokenisation]()
+1.  [The improvements made on ERC-20](#the-improvements-to-erc-20)
+2.  [The improvements made to make a Token service-friendly](#the-improvements-made-to-make-a-token-service-friendly)
+3.  [The improvements for Robust Tokenisation](#the-improvements-for-robust-tokenisation)
 
 As the most basic and most common way of controlling and storing Tokens, ERC-20 has proved to be a feasible and viable direction, however due to different implementations, such as gas consumption and mathematical safety of execution, many Tokens have suffered abuse and denial-of-service that led to financial loss.
 
@@ -152,13 +152,13 @@ Further details are in the next section.
 
 Index:
 
-1. [Extension to `address` and `uint256`]
-2. [Immutable Token basic info]
-3. [Optimised Token holders' storage]
-4. [Mutable Token basic info]
-5. [Events of the Token]
-6. [Operation functions of the Token]
-7. [More secure Token]
+1. [Extension to `address` and `uint256`](#extension-to-address-and-uint256)
+2. [Immutable Token basic info](#immutable-token-basic-info)
+3. [Optimised Token holders' storage](#optimised-token-holders-storage)
+4. [Mutable Token basic info](#mutable-token-basic-info)
+5. [Events of the Token](#events-of-the-token)
+6. [Operation functions of the Token](#operation-functions-of-the-token)
+7. [More secure Token](#more-secure-token)
 
 ---
 
@@ -530,7 +530,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 Index:
 
-1. [Transfer and call]()
+1. [Transfer and call](#transfer-and-call)
 
 ---
 
@@ -630,8 +630,8 @@ transferAndCall(
 
 Index:
 
-1. [Multiple Token transfer]()
-2. [Delegated Token transfer and call]()
+1. [Multiple Token transfer](#multiple-token-transfer)
+2. [Delegated Token transfer and call](#delegated-token-transfer-and-call)
 
 ---
 
