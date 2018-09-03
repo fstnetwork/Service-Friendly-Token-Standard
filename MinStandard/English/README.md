@@ -33,7 +33,7 @@ FundersToken have also developed a **Token transfer relay**, which simulates blo
 
 <!--The motivation is critical for EIPs that want to change the Ethereum protocol. It should clearly explain why the existing protocol specification is inadequate to address the problem that the EIP solves. EIP submissions without sufficient motivation may be rejected outright.-->
 
-We categorise this interface standard to the following :
+We categorise this interface standard to the following:
 
 1.  [The improvements made on ERC-20](#erc-20-補強)
 2.  [The improvements made to make a Token service-friendly](#service-friendly-服務友善化-補強)
@@ -47,7 +47,7 @@ We have make optimisation and made mathematical checks for the implementation of
 
 To define a service-friendly environment, we must first identify the design goals of the payment flow and the smart contracts on the Ethereum Blockchain.
 
-The payment flow of an Ethereum transaction :
+The payment flow of an Ethereum transaction:
 
 ```mermaid
 graph LR
@@ -68,7 +68,7 @@ CA3 -.- Z4[msg]
 Z4  -.-> A
 ```
 
-The payment flow of a ERC20 token transaction :
+The payment flow of a ERC20 token transaction:
 
 ```mermaid
 graph LR
@@ -112,7 +112,7 @@ From the statement above, we can see the Tokens are less direct and dynamic comp
 
 And because the Token ledger is within the smart contract of the token, any mutation to the ledger (the balance and the allowance) or the logics must be designed and wrapped in the Token smart contract. Otherwise, the Token smart contract has to authorize or approve external smart contracts to extend the logic that is related to the ledger. But the former option slows down the development cycle, the latter option will increase the execution cost and security risks.
 
-We had experienced the inconvenience during the development of smart contract module and providing modularisation services. Our goal is to make the Token payment flow described  below :
+We had experienced the inconvenience during the development of smart contract module and providing modularisation services. Our goal is to make the Token payment flow described  below:
 
 ```
 (EA) --[transfer and call]-> (CA 1)
@@ -304,9 +304,9 @@ library Math {
 
 #### Immutable Token basic info:
 
-- `string name` The Token name
-- `string symbol` The Token symbol
-- `uint8 decimals` The decimals of stored number in ledger 
+- `string name` The Token name.
+- `string symbol` The Token symbol.
+- `uint8 decimals` The decimals of stored number in ledger.
 
 ```
 string public constant name;
@@ -320,15 +320,17 @@ uint8 public constant decimals;
 
 In `Account`,
 
-- `uint256 balance` is the balance of the Token holder
-- `uint256 nonce` is the transfer count of the Token holder, avoiding double spending, but only used in Token relay mode, the details are in [Tokenisation section]().
-- `mapping (address => Instrument) instruments` is the storage stores the data among the Token holders.
+- `uint256 balance` is the balance of the Token holder.
+- `uint256 nonce` is the transfer count of the Token holder, avoiding double spending, but only used in Token relay, the details are published in [Tokenisation section]().
+- `mapping (address => Instrument) instruments` is the storage that stores the data among Token holders.
 
 In `Instrument` ,
 
-- `uint256 allowance` is the allowance for other users approved by the token holder
+- `uint256 allowance` is the quota of Tokens that the Token holder that have authorised other holders to have access to.
 
-_`DirectDebit directDebit` is the direct debit info of the token holder, but this part is more like an example to design a shared data structure among the token holders. The Service-Friendly Token Standard extension and the token implementation of by FundersToken contain this structure_
+_`DirectDebit directDebit` shows the detail of agreement which the Token holder allows withdrawal by other holders on a particular date in a designated time-frame._
+
+_`DirectDebit` is a demonstration of data between token holders that can be placed in Instrument. It is not included in this standard, but it is included in the full version of Service-Friendly Token Standard._
 
 ```
 struct Instrument {
@@ -349,10 +351,10 @@ mapping(address => Account) internal accounts;
 
 #### Mutable Token basic info:
 
-- `totalSupply()` get the totalSupply of the token
-- `balanceOf(address)` get the balance of the token holder
-- `allowance(address,address)` get the allowance of the approved user
-- `address issuer` 為代幣發行者位址，這雖然非 ERC-20 標準之要求，而於諸多操作中需要此資訊之檢查
+- `totalSupply()` is the total supply of token issued.
+- `balanceOf(address)` allows token holders to check their total balance.
+- `allowance(address,address)` allows token holders to check the quota of Tokens that the Token holder that have authorised other holders to have access to.
+- `address issuer` is the address of the Token issuer，although this is not a requirement for the ERC-20 standard, however this information is required for inspection in several actions.
 
 ```
 function totalSupply () public view returns (uint256);
@@ -370,17 +372,17 @@ address public issuer;
 
 ---
 
-#### 代幣事件:
+#### Events of the Token:
 
-- `Transfer(address,address,uint256)` 為任何一個代幣數字變動時應發射的事件
-- `Approval(address,address,uint256)` 為任何一次的代幣擁有者允許其他帳戶使用時發射的事件
+- `Transfer(address,address,uint256)` is the event that triggers any change in the amount of token.
+- `Approval(address,address,uint256)` is the event where Token holder authorize access to different Token holders.
 
 ```
 event Transfer(address indexed from, address indexed to, uint256 value);
 event Approval(address indexed owner, address indexed spender, uint256 value);
 ```
 
-其中，因為支持絕大部分的區塊鏈瀏覽器服務，如 Etherscan ，在代幣一開始被建構時，發射事件，表示初始代幣發行。
+Also, to support Blockchain Explorers such as Etherscan, when the Token is first deployed, the `Transfer` event would be emitted.
 
 ```
 emit Transfer(address(0), <tokenIssuer>, <totalSupply>);
@@ -388,9 +390,9 @@ emit Transfer(address(0), <tokenIssuer>, <totalSupply>);
 
 ---
 
-#### 代幣的操作相關函數:
+#### Operation functions of the Token:
 
-以下與 ERC-20 的介面標準是一樣的，但與數學相關的操作，特別是減法的部份就會以 `Math` 的延伸方法進行操作，並搭配讀取 `accounts` 映射表來降低映射表操作次數
+The following interface is the same as the ERC-20, except for the math-related operations, especially during subtraction, it will be operated in `Math` extension, and by loading the mapping of `accounts` to reduce the number of mapping related operations.
 
 ```
 function transfer(address to, uint256 value) public returns (bool) {
@@ -439,13 +441,13 @@ function approve(address spender, uint256 value) public returns (bool) {
 }
 ```
 
-`approve(address,uint256)` 中的 `erc20ApproveChecking` 請見下一個部份。
+Please refer `erc20ApproveChecking` from `approve(address,uint256)` in the next section
 
-而當 `erc20ApproveChecking` 為 `true` 時，此 `approve(address,uint256)` 中會額外做檢查，檢查 `spender` 目前的 `allowance` 是否為 0，以防 spender 插隊攻擊代幣擁有者。
+When `erc20ApproveChecking` is `true`，`approve(address,uint256)` will do extra checks that if the `allowance` of `spender` is 0 before this call，to prevent front-running attack by `spender`.
 
 ---
 
-#### 增強安全用代幣資訊、操作:
+#### More secure Token:
 
 - `bool erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
 - `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件，需要透過 `setERC20ApproveChecking(bool)` 引發
@@ -525,7 +527,7 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 </details>
 
-### Service-Friendly (服務友善化) 補強
+### The improvements made to make a Token service-friendly
 
 索引:
 
@@ -625,7 +627,7 @@ transferAndCall(
   "0xae77c23700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
 ```
 
-### Tokenisation (代幣化) 補強
+### The improvements for Robust Tokenisation
 
 索引:
 
@@ -854,74 +856,78 @@ function increaseNonce() public returns (bool) {
 
 <!--The rationale fleshes out the specification by describing what motivated the design and why particular design decisions were made. It should describe alternate designs that were considered and related work, e.g. how the feature is supported in other languages. The rationale may also provide evidence of consensus within the community, and should discuss important objections or concerns raised during discussion.-->
 
-以下我們來補充細節與做個總結
+We will summarise and add in the details in the following.
 
-### ERC-20 補強
+### The improvements made on ERC-20
 
-因為 ERC-20 只規範了介面標準，而缺乏實作方面的建議，我們把從頭實作 ERC-20 時發現的問題融入了這標準裡，我們認為對於終端使用者或企業使用者而言，降低成本與邏輯明確是必要的，故做了不少儲存時的優化。例如跟帳戶有關的就是一個 `accounts` 的映射表，讀取結構 (struct) 的位址並且拿出需要的資料們，總比讀取自數個映射表還來的輕量。
+As ERC-20 only specifies the interface and has lack the requirements and suggestion for real-world practices. While building on top of the ERC-20 standard, we have encountered a few challenges and after finding the solution, we decided to infuse our solution into this standard. For entreprise users and Token end-users, a vivid operating logic and low-cost is a must, with that in mind, we have implemented several optimisation for storage. Taking `accounts` as an example, we have changed the mapping of accounts to only read the struct of the reference and only to take the necessary data, by doing this, the process would be lighter compared to read the all accounts-related mappings.
 
-而關於增強安全用的部份，主要是針對 `spender` 會插隊攻擊代幣擁有者在指定新 `allowance` 的時，如果沒有特別檢查，從 1,000 指定至 500 的 `allowance` 的過程中，插隊攻擊就會先把 1,000 花掉，然後讓代幣擁有者額外又 `approve` 了 500，**1,000 -> 0 -> 500** 。
+We have also made improvements on security, specifically on preventing front-running attack by the `spender`, when the token holder is assigning `allowance`. If this process is not checked, the process of assigning `allowance` from 1,000 to 500, in a front-running attack scenario, the attacker would first spend 1,000 that was previously assigned, and as the token holder  approve another 500, making the `allowance`: **1,000 -> 0 -> 500**.
 
-故安全版的要求就會是 `approve` 一個新值前，至少在 ERC-20 的介面下是 `allowance` 必須先回到 0，雖然變得安全但變成要發送兩個以太坊交易了，我們更是建議使用有預想值 (`expectedValue`) 的那一個介面，畢竟 `increaseAllowance` 與 `decreaseAllowance` 也可能會被插隊攻擊。
+In a safer environment, the requirement before approve a new value, at least under the ERC-20 interface, the `allowance` would return to 0. While this mechanism makes it safer, but this would mean that 2 Ethereum transactions would be needed. However we would suggest to utilize the interface of `expectedValue`, as both `increaseAllowance` and `decreaseAllowance` are in risk of front-running attack.
 
-### Service-Friendly (服務友善化) 補強
+### The improvements made to make a Token service-friendly
 
-首先，我們故意讓函數名稱取為 `transferAndCall`，而非用函數多載，是因為 `transfer` 到一個任何一個帳戶，甚至是智能合約，本來就是被允許並且適合乎邏輯的，因為本來有些流程就是要先傳到智能合約，然後另一方在過一段時間後再進行下一步。
+First of all, we intentionally named the function as `transferAndCall`，instead of function overload, that is because the definition of `transfer` is from one account to another account, sometimes even a smart contract, which is logical, as some kinds of the procedures must first sent to the smart contract, awaiting for the next step (the next transaction).
 
-假如因太多代幣被傳到無法移動代幣的智能合約，而去禁止 ERC-20 `transfer` 的傳代幣至智能合約，是有點本末倒置的，因為這不是 ERC-20 的錯，是代幣傳送者或者是服務提供者的錯。
+However if we prohibit ERC-20 `transfer` just because of too many tokens are sent to a smart contract that are unable to transfer the token, it would be putting the cart before the horse. As this is not the fault of ERC-20 but the fault of the one who transfers the tokens and the service provider.
 
-我們故意取了一個不同一點的名字來表達功能的不同，以及更重要的，目的、動機的不同。因為我們是為了讓代幣相關的交易流程能變得跟以太坊交易一樣直覺好規劃，所以才做了讓接收者智能合約可以連續動作的機制，並且因著覆蓋參數可以確保沒有人能濫用任何資源。
+We intentionally used a different terms to express different functionality, most importantly different aims and different motives. Because we wanted to make Token-related transaction and transfer process to be intuitive and easy to plan, we have allow the mechanism for receiving smart contract to perform continuous actions and to replace the original calldata with the correct calldata by force, thus no one would be able to abuse any resources.
 
-想像一個以太坊交易可以做到一連串複雜的 `transferAndCall`，就像是把複雜的金流服務搬到了鏈上，複雜但不失其規劃過的流程，並且終究可以被自由地延伸、擴展，以達到服務型智能合約們的模組化。
+Imagine a single Ethereum transaction to perform a continuous `transferAndCall`, it is similar to putting a complex payment flow on chain, complex yet stream-lined procedure, and can be extensive, scalable by will, to achieve a service-friendly modularisation for Tokens.
 
-這也是為什麼這個部份稱作為 **Service-Friendly (服務友善)**，因為對於服務型的智能合約們是非常好用的、可信任的，加上要串接鏈下的現有商業邏輯也能以一個以太坊交易解決，更是福音。
+This is why this section is called **Service-Friendly**, because a Service-Friendly smart contract is easy to use, trustworthy, also to be able to integrate the business logics off-chain, to be able to do all of these on Ethereum, that’d be a blessing.
 
-### Tokenisation (代幣化) 補強
+### The improvements for Robust Tokenisation
 
-對於一個良好的金流服務、健康的代幣化所做出的一個修正，就是傳送代幣不應該花上以太幣，而即使 **Account Abstraction** 出來了之後，也會因由服務提供者自行承擔以太坊成本而容易形成硬成本，造成商業擴張的困難。
+The last modification that we did to improve the flow of payment is to removing the need of paying Ether to make a token transfer. Although the concept of **Account Abstraction** is set to release in the near future, however in the concept of Account Abstraction, the service provider is the one who carries the burden of paying Ether, and this action will bring hard-cost to the business, making it hard to scale.
 
-所以讓「自願者」能出來協助轉發交易才是首要重點。  
-自願者，也就是轉發者 (Relayer) 必須要能自行挑選正常、無錯的代幣傳送請求，並代為發送至鏈上，再讓智能合約檢查代幣傳送者指定了哪些事物，轉發者又做了哪些調整，要避免代幣傳送者攻擊轉發者，反之也要避免轉發者攻擊代幣傳送者。
+A **volunteer**, also known as a **Relayer** must be able to voluntarily pick a normal, non-error token transfer request and relay it to the Ethereum blockchain, then via smart contract to confirm and check what object was specified and what modification was made by the relayer, just to make sure the origin of the token transfer won't be able to attack the relayer and the relayer won't be able to attack the origin of the token transfer.    
 
-我們將攻擊模式與解決方式列出:
+The list below shows the potential attack and the solution for the attacks:
 
-1. 轉發者會重複送出代幣傳送請求，或將錯誤的代幣傳送請求送至代幣智能合約
-   > 新增 `nonce` 這個資料或手動增加 (`increaseNonce()`) 自己的 `nonce` 的方式可以解決，或即使代幣傳送請求失敗，`nonce` 亦會增加
-2. 轉發者將此代幣傳送請求送至另一個剛好 `nonce` 也對應好的代幣智能合約
-   > 新增 `tokenAddress` 資料至簽章中的方式可以解決
-3. 代幣傳送者浪費轉發者的以太幣燃料費
-   > 新增 `gasAmount` 資料至簽章中，假如代幣傳送者給得太低，轉發者一開始就能知道，故可以先於鏈下捨棄此代幣傳送請求。  
-   > 也因為為了讓此類別攻擊徹底失效，轉發者無論如何都會送出可以得到 `fee` 的交易，故針對即使會失敗的代幣傳送請求也是會送出的，也就是說，代幣傳送者在編織代幣傳送請求前就應該要檢查好，也就能避免反過來代幣傳送者被浪費資源。就跟以太坊自己一樣。
-4. 轉發者故意以不足的以太幣燃料量拿到了 `fee` 但讓原有該做完的操作沒做完
-   > 新增 `gasAmount` 資料至簽章中，因為代幣傳送者自己定義了這個數字，故可解決，即使這個數字錯了，也可以用 **1.** 的方法，在最差的狀況，也會因為燃料不足時會交易失敗，故還是可以解決
+1. Relayer repeatedly sends token transfer request or broadcast a wrong token transfer to the token smart contract.
+   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce`()). Even when the token transfer request has failed，`nonce` will increase regardless.
+2. Relayer took the token transfer request and send it to another Token smart contract with the same `nonce`
+   > Can be solved by adding data of `tokenAddress` into signature
+3. The origin of the token transfer wasting Relayer's Ethereum Gas fee.
+   > This can be solved by adding the data for `gasAmount` into the signature, in a scenario where the origin of the token transfer provides a very small incentive to the relayer, the relayer will be able to see it from the start, hence will be able to drop the request.
+   > And also, to make sure this type of attack will inevitably fail, and to ensure relayer to get the `fee` for the transfer, thus even in a scenario of a failed token transfer request, it'd be sent regradless. Meaning that the origin of the token transfer should check the condition before making the token transfer, by doing so, it'd also prevent relayer to waste resources conversely. Similar to what Ethereum is doing.
+4. Relayer collected token `fee` yet assigned insufficient Ethereum gas fee, leaving the operations to be half done.
+   > Add data of `gasAmount` to the signature, because the origin of the token transfer has defined this number, hence this is solvable, even if the number is wrong, we can still fix this issue similar to **scenario 1.**. In a worst case scenario, the transaction will fail due to insufficient gas fee, which itself is solvable.
 
-我們的實作都有將攻擊模式考慮於其中，故可確保是一個健康的代幣轉發模型。  
-此外，轉發者們彼此競爭，因著給出較高的以太坊燃料單價，就可以讓代幣傳送請求被驗證得更快，這就是為什麼我們十分重視 `fee` 與 `gasAmount` 的設計，因為公平的機制才能吸引轉發者們來轉發，賺取代幣，也讓代幣傳送者們享受到更快的交易驗證，雙贏。
+We have considered all possible scenarios of attacks during our implementation and practices to ensure that we have a robust token relay model up and running.  
+In other words, relayers will compete each other, thus providing a higher Ether gas price, making the token transfer request to be confirmed faster, that is also we have emphasises on the design and improvement of `fee` and `gasAmount` because only via a fair mechanism we can attract relayers to relay token transfers and allow them to earn tokens and enable token holders to enjoy a faster token verification, making it a win-win situation.
 
-### 總結
+### Conclusion
 
-此代幣介面標準是稍微龐大複雜的，但我們是以一個區塊大小 (blocksize) 還可以裝得下，並且可以提供大量的延伸性、擴展性的智能合約作為我們的目標，也希望這也是一個讓服務型智能合約，或是說實用型代幣 (Utility Token) 真正能落地的一個介面
+This Token design is larger and complex compared to the others, yet it is still able to fit into a single block. To provide an extendable, scalable smart contract is our main goal, we also hope that this Token Standard would serve as the benchmark for **Service-Friendly Token Standard** that is yet to come, and to be the standard to allow **Utility Tokens** to be grounded. 
 
 ## Backwards Compatibility
 
 <!--All EIPs that introduce backwards incompatibilities must include a section describing these incompatibilities and their severity. The EIP must explain how the author proposes to deal with these incompatibilities. EIP submissions without a sufficient backwards compatibility treatise may be rejected outright.-->
 
-此代幣標準完全支援並相容 ERC-20 標準
+This Token Standard is fully compatible with ERC-20.
 
 ## Test Cases
 
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
-經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試  
-原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinStandard/MinServiceFriendlyToken.sol
+We have tested the Token via the scripts off-chain, and several testing smart contract on-chain.
+
+Service-Friendly Token source code:  
+https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinStandard/MinServiceFriendlyToken.sol
+
+The test cases will be open-sourced soon.
 
 ## Implementation
 
 <!--The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.-->
 
-FundersToken (https://fstk.io) 所發行之 Funder Smart Token 為一種 Service-Friendly Token (服務友善型代幣)，也與多個 FundersToken 去中心平台的智能合約模組連接，形成強壯可靠的智能合約服務。
+The Token that FundersToken (https://fstk.io) has issued, is one example of the Service-Friendly Token mentioned above，and it is integrated with the modules that FundersToken provide via our Decentralised Tokenisation Platform to form a robust service-based smart contracts.
 
-於 mainnet 的位址在: https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
+Mainnet address:  
+https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
 
 ## Copyright
 
