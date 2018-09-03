@@ -354,7 +354,7 @@ mapping(address => Account) internal accounts;
 - `totalSupply()` is the total supply of token issued.
 - `balanceOf(address)` allows token holders to check their total balance.
 - `allowance(address,address)` allows token holders to check the quota of Tokens that the Token holder that have authorised other holders to have access to.
-- `address issuer` is the address of the Token issuer，although this is not a requirement for the ERC-20 standard, however this information is required for inspection in several actions.
+- `address issuer` is the address of the Token issuer, although this is not a requirement for the ERC-20 standard, however this information is required for inspection in several actions.
 
 ```
 function totalSupply () public view returns (uint256);
@@ -443,17 +443,17 @@ function approve(address spender, uint256 value) public returns (bool) {
 
 Please refer `erc20ApproveChecking` from `approve(address,uint256)` in the next section
 
-When `erc20ApproveChecking` is `true`，`approve(address,uint256)` will do extra checks that if the `allowance` of `spender` is 0 before this call，to prevent front-running attack by `spender`.
+When `erc20ApproveChecking` is `true`, `approve(address,uint256)` will do extra checks to make sure the `allowance` of `spender` is 0 before this call, to prevent front-running attack by `spender`.
 
 ---
 
 #### More secure Token:
 
-- `bool erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查，預設為 `false`，只有 `issuer` 才能更動
-- `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件，需要透過 `setERC20ApproveChecking(bool)` 引發
-- `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`，通過驗證才能繼續改變 `allowance`
+- `bool erc20ApproveChecking` 為一個狀態值紀錄是否要開啟更安全的 `approve` 相關執行檢查,預設為 `false`,只有 `issuer` 才能更動
+- `SetERC20ApproveChecking(bool)` 為 `erc20ApproveChecking` 改變時會發射的事件,需要透過 `setERC20ApproveChecking(bool)` 引發
+- `approve(address,uint256,uint256)` 會要求代幣擁有者輸入預期的 `allowance`,通過驗證才能繼續改變 `allowance`
 - `increaseAllowance(address,uint256)` 可直接增加 `allowance`
-- `decreaseAllowance(address,uint256,bool)` 可直接減少 `allowance`，而當 `strict` 為 `true` 時，會用 `Math` 進行減法檢查
+- `decreaseAllowance(address,uint256,bool)` 可直接減少 `allowance`,而當 `strict` 為 `true` 時,會用 `Math` 進行減法檢查
 - `spendableAllowance(address,address)` 可直接得知被允許之帳戶可以實際上消耗多少額度
 
 <details><summary>Secure ERC20 Approve Checking Soucre Code</summary>
@@ -537,15 +537,15 @@ function spendableAllowance(address owner, address spender) public view returns 
 
 #### Transfer and call (傳送呼叫):
 
-為了讓傳送代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成，能讓這些呼叫可以連續地一個串一個串下去，並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`，對於參數的檢查與覆蓋就會變得非常嚴格
+為了讓傳送代幣與呼叫接收者智能合約 (receiverContract) 是一氣呵成,能讓這些呼叫可以連續地一個串一個串下去,並且同時也讓接收者智能合約可以得到真正的 `value` 與 `msg.sender`,對於參數的檢查與覆蓋就會變得非常嚴格
 
 在 `transferAndCall(address,uint256,bytes)` 的參數中
 
 - `address to` 為接收者智能合約的位址
-- `uint256 value` 為代幣傳送量，與 `transfer` 的一樣意義
-- `bytes data` 為後續所有連續動作都需要的參數資料，與 `to.call(data)` 搭配使用，`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
+- `uint256 value` 為代幣傳送量,與 `transfer` 的一樣意義
+- `bytes data` 為後續所有連續動作都需要的參數資料,與 `to.call(data)` 搭配使用,`data` 其中應內含 `signature`、 `value` 與 `msg.sender`
 
-並且因為 `data` 最少要包含要傳遞給接收者智能合約的資料，故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
+並且因為 `data` 最少要包含要傳遞給接收者智能合約的資料,故長度至少為 **4 bytes signature + 32 bytes value + 32 bytes sender** = **68 bytes**
 
 也會進行下列檢查
 
@@ -553,13 +553,13 @@ function spendableAllowance(address owner, address spender) public view returns 
 - 檢查 `data` 的長度需大於等於 68 bytes
 - 檢查確定代幣傳送已經完成
 
-以及對於 data 的前兩個參數進行強制覆蓋，讓 `data` 中必定是
+以及對於 data 的前兩個參數進行強制覆蓋,讓 `data` 中必定是
 
 ```
 [4 bytes signature][32 bytes value][32 bytes msg.sender][其他原先的資料們]
 ```
 
-故意讓 `uint256 value` 先而 `address sender` (`address from`) 後的原因為，不與 `address to` + `uint256 value` 的組合順序搞混
+故意讓 `uint256 value` 先而 `address sender` (`address from`) 後的原因為,不與 `address to` + `uint256 value` 的組合順序搞混
 
 ```
 // Token Contract (TokenA, decimals = 18)
@@ -587,7 +587,7 @@ function transferAndCall(
 }
 ```
 
-以及，接收者智能合約的函數就需要配合前兩個參數為 `uint256 value` 以及 `address from`  
+以及,接收者智能合約的函數就需要配合前兩個參數為 `uint256 value` 以及 `address from`  
 範例:
 
 ```
@@ -607,9 +607,9 @@ function purchase(
 }
 ```
 
-所以要使終端使用者可以用 100 TokenA 購買 TokenB 時，只要能編碼下列 tx input，簽署並送出即可
+所以要使終端使用者可以用 100 TokenA 購買 TokenB 時,只要能編碼下列 tx input,簽署並送出即可
 
-假設 `msg.sender` (`from`) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`，也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
+假設 `msg.sender` (`from`) 為 `0x83b21dbd0e60b9709d647de183f5ae0c31b54c2a`,也假設接收者智能合約 (VendorMachine) 為 `0x1234567890123456789012345678901234567890`
 
 ```
 transferAndCall(
@@ -618,7 +618,7 @@ transferAndCall(
   "0xae77c23700000000000000000000000083b21dbd0e60b9709d647de183f5ae0c31b54c2a0000000000000000000000000000000000000000000000056bc75e2d63100000");
 ```
 
-或者擺隨意的 bytes 在後面，但 signature 不能影響到 ( `"0x" + keccak256("purchase(uint256,address)")[0~7]` = `0xae77c237` )
+或者擺隨意的 bytes 在後面,但 signature 不能影響到 ( `"0x" + keccak256("purchase(uint256,address)")[0~7]` = `0xae77c237` )
 
 ```
 transferAndCall(
@@ -641,11 +641,11 @@ transferAndCall(
 - `transfer(uint256[])` 為一次性傳送代幣給多個對象時所作的操作
 - `transfer(uint256[])` 中的參數 `uint256[] data` 內容是各元素為 **20 bytes receiverAddress + 12 bytes value** 的 `uint256` 數字的不限長度陣列
 
-為減少所需要帶上的參數，我們將接收者位址 (receviers) 跟 代幣傳送量 (values) 合在了一起，在一個 32 bytes 的 `uint256` 數字裡面就能紀錄接收者地址與代幣傳送量
+為減少所需要帶上的參數,我們將接收者位址 (receviers) 跟 代幣傳送量 (values) 合在了一起,在一個 32 bytes 的 `uint256` 數字裡面就能紀錄接收者地址與代幣傳送量
 
-只不過 12 bytes 能紀錄的量對於 decimals = 18 的代幣而言，就不能傳太過於大的數字了，但至少對每個接收者也有 79,228,162,514.264337593543950335 個代幣可傳 (已經經過了 decimals 的處理以便人類理解))，以一個健康的代幣而言已經超越總代幣發行量，也就是 `0xffffffffffffffffffffffff / (10 ** 18)`
+只不過 12 bytes 能紀錄的量對於 decimals = 18 的代幣而言,就不能傳太過於大的數字了,但至少對每個接收者也有 79,228,162,514.264337593543950335 個代幣可傳 (已經經過了 decimals 的處理以便人類理解)),以一個健康的代幣而言已經超越總代幣發行量,也就是 `0xffffffffffffffffffffffff / (10 ** 18)`
 
-並且為了正確顯示在區塊鏈瀏覽器上，必須每個 `Transfer(address,address,uint256)` 事件都要射出，然後也為了優化 storage 的讀寫，最後才會將所花上的餘額寫入代幣擁有者的餘額中
+並且為了正確顯示在區塊鏈瀏覽器上,必須每個 `Transfer(address,address,uint256)` 事件都要射出,然後也為了優化 storage 的讀寫,最後才會將所花上的餘額寫入代幣擁有者的餘額中
 
 ```
 function transfer(uint256[] data) public returns (bool) {
@@ -670,12 +670,12 @@ function transfer(uint256[] data) public returns (bool) {
 
 #### 代幣傳送委派、代幣轉發:
 
-此為代幣化關鍵的一個介面，讓代幣的傳送不再需要以太幣當作手續費，而是以也付代幣當作手續費的轉變
+此為代幣化關鍵的一個介面,讓代幣的傳送不再需要以太幣當作手續費,而是以也付代幣當作手續費的轉變
 
 代幣轉發也是一個可以開啟或關閉的功能:
 
-- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟代幣轉發功能，預設為 `false`，只有 `issuer` 才能更動
-- `SetDelegate(bool)` 為 `isDelegateEnable` 改變時會發射的事件，需要透過 `setDelegate(bool)` 引發
+- `bool isDelegateEnable` 為一個狀態值紀錄是否要開啟代幣轉發功能,預設為 `false`,只有 `issuer` 才能更動
+- `SetDelegate(bool)` 為 `isDelegateEnable` 改變時會發射的事件,需要透過 `setDelegate(bool)` 引發
 
 ```
 bool public isDelegateEnable;
@@ -692,18 +692,18 @@ function setDelegate(bool delegate) public {
 
 在 `delegateTransferAndCall(uint256,uint256,uint256,address,uint256,bytes,uint8,uint8,bytes32,bytes32)` 中
 
-- `uint256 nonce` 代表此被委派的傳送是第幾個傳送，這是為了防止雙花攻擊
+- `uint256 nonce` 代表此被委派的傳送是第幾個傳送,這是為了防止雙花攻擊
 - `uint256 fee` 代表代幣傳送者 (Token transfer origin) 願意給轉發者 (Relayer) 多少代幣當作手續費
-- `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量，使轉發者可以事先檢查並且不受浪費攻擊
-- `address to` 代表代幣傳送的接收者地址，可以為智能合約地址
-- `uint256 value` 代幣傳送量，與 `transfer(address,uint256)` 中的 `value` 的意義一樣
+- `uint256 gasAmount` 代表代幣傳送者指定的以太坊燃料量,使轉發者可以事先檢查並且不受浪費攻擊
+- `address to` 代表代幣傳送的接收者地址,可以為智能合約地址
+- `uint256 value` 代幣傳送量,與 `transfer(address,uint256)` 中的 `value` 的意義一樣
 - `bytes data` 與 `transferAndCall(address,uint256,bytes)` 中的 `data` 的意義一樣
 - `DelegateMode mode` 代表為代幣傳送者想要指定轉發者及指定誰可收取 `fee` 的委派模式
 - `uint8 v` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `v`
 - `bytes32 r` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `r`
 - `bytes32 s` 為證明代幣傳送者簽署上述參數的簽章 (ECDSA signature) 中的 `s`
 
-代幣傳送者需要在鏈下先編織好以上的資訊並且簽署才能將參數們交給轉發者，鏈外部份的實作將會以參考的方式補充進來，而非有硬性要求
+代幣傳送者需要在鏈下先編織好以上的資訊並且簽署才能將參數們交給轉發者,鏈外部份的實作將會以參考的方式補充進來,而非有硬性要求
 
 資料的簽署方法為
 
@@ -727,10 +727,10 @@ ECDSA_Sign(
 
 `DelegateMode` 則有以下幾種:
 
-- `PublicMsgSender` 代表是任何人都可以是轉發者，並且`fee` 是將給 `msg.sender`
-- `PublicTxOrigin` 代表是任何人都可以是轉發者，並且`fee` 是將給 `tx.origin`
-- `PrivateMsgSender` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `msg.sender`
-- `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者，並且`fee` 是將給 `tx.origin`
+- `PublicMsgSender` 代表是任何人都可以是轉發者,並且`fee` 是將給 `msg.sender`
+- `PublicTxOrigin` 代表是任何人都可以是轉發者,並且`fee` 是將給 `tx.origin`
+- `PrivateMsgSender` 代表是代幣傳送者指定了轉發者,並且`fee` 是將給 `msg.sender`
+- `PrivateTxOrigin` 代表是代幣傳送者指定了轉發者,並且`fee` 是將給 `tx.origin`
 
 <details><summary>DelegateTransferAndCall Soucre Code</summary>
 
@@ -839,9 +839,9 @@ function nonceOf(address owner) public view returns (uint256) {
 }
 ```
 
-而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救，進行強制覆蓋，故須 nonce 方面的操作
+而因代幣傳送者要有備援方案針對誤發出去的代幣傳送請求 (Token transfer request) 進行補救,進行強制覆蓋,故須 nonce 方面的操作
 
-- `IncreaseNonce(address,uint256)` 為 nonce 增加時所發射的事件，唯有 `delegateTransferAndCall()` 與 `increaseNonce()` 觸發
+- `IncreaseNonce(address,uint256)` 為 nonce 增加時所發射的事件,唯有 `delegateTransferAndCall()` 與 `increaseNonce()` 觸發
 - `increaseNonce()` 為代幣傳送者手動增加 nonce 之操作
 
 ```
@@ -868,7 +868,7 @@ In a safer environment, the requirement before approve a new value, at least und
 
 ### The improvements made to make a Token service-friendly
 
-First of all, we intentionally named the function as `transferAndCall`，instead of function overload, that is because the definition of `transfer` is from one account to another account, sometimes even a smart contract, which is logical, as some kinds of the procedures must first sent to the smart contract, awaiting for the next step (the next transaction).
+First of all, we intentionally named the function as `transferAndCall`, instead of function overload, that is because the definition of `transfer` is from one account to another account, sometimes even a smart contract, which is logical, as some kinds of the procedures must first sent to the smart contract, awaiting for the next step (the next transaction).
 
 However if we prohibit ERC-20 `transfer` just because of too many tokens are sent to a smart contract that are unable to transfer the token, it would be putting the cart before the horse. As this is not the fault of ERC-20 but the fault of the one who transfers the tokens and the service provider.
 
@@ -887,7 +887,7 @@ A **volunteer**, also known as a **Relayer** must be able to voluntarily pick a 
 The list below shows the potential attack and the solution for the attacks:
 
 1. Relayer repeatedly sends token transfer request or broadcast a wrong token transfer to the token smart contract.
-   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce`()). Even when the token transfer request has failed，`nonce` will increase regardless.
+   > This can be solved by adding in `nonce` or manually increase the `nonce` (`increaseNonce()`. Even when the token transfer request has failed, `nonce` will increase regardless.
 2. Relayer took the token transfer request and send it to another Token smart contract with the same `nonce`
    > Can be solved by adding data of `tokenAddress` into signature
 3. The origin of the token transfer wasting Relayer's Ethereum Gas fee.
@@ -924,7 +924,7 @@ The test cases will be open-sourced soon.
 
 <!--The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.-->
 
-The Token that FundersToken (https://fstk.io) has issued, is one example of the Service-Friendly Token mentioned above，and it is integrated with the modules that FundersToken provide via our Decentralised Tokenisation Platform to form a robust service-based smart contracts.
+The Token that FundersToken (https://fstk.io) has issued, is one example of the Service-Friendly Token mentioned above, and it is integrated with the modules that FundersToken provide via our Decentralised Tokenisation Platform to form a robust service-based smart contracts.
 
 Mainnet address:  
 https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
