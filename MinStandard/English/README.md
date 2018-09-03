@@ -913,7 +913,7 @@ This Token Standard is fully compatible with ERC-20.
 
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
-We have tested the Token via the scripts off-chain, and several testing smart contract on-chain.
+We have tested the Token via the scripts off-chain, and several testing smart contracts on-chain.
 
 Service-Friendly Token source code:  
 https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/MinStandard/MinServiceFriendlyToken.sol
