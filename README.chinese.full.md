@@ -25,9 +25,9 @@ requires: 20
 
 原本專注於群眾募資的代幣技術與市場，遭遇到了即將要轉型成實用型 (Utility Token) 的陣痛期，非常多的專案或企業遇到了代幣的智能合約功能不足的問題，難以支撐基本的商業模式並應用於更多現實世界的服務或產品。
 
-以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 時常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FundersToken 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
+以下的諸多介面設計中，都是基於商業在經歷健康的代幣化 (Tokenisation) 時常會需要的基本功能，主要是面向移除智能合約間的安全連接困難、移除鏈上下的整合困難，以及我們 FST Network 對於諸多代幣介面標準 (Token standard) 的理解跟改善，試圖建立原生代幣自主環境 (Native Token environment)，即對於代幣運作是友善的環境。
 
-以及 FundersToken 原創的代幣傳送轉發 (Token transfer relay)，為代幣以智能合約的方式模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
+以及 FST Network 原創的代幣傳送轉發 (Token transfer relay)，為代幣以智能合約的方式模擬區塊鏈，可以讓終端使用者免於需要支付以太幣作為燃料費的限制。
 
 ## Motivation
 
@@ -68,7 +68,7 @@ ERC-20 作為最基本最普遍的代幣使用方式及儲存方式，著實被�
 
 也因為代幣的帳本 (Ledger) 就在代幣的智能合約中，帳本裡數字的變化操作就也要被包在代幣智能合約裡，或者是驗證外部智能合約的邏輯使帳本的數字能被調動，但前者會讓代幣開發緩慢，而後者會讓執行成本升高與安全性風險增高。
 
-FundersToken 在提供模組化智能合約與代幣化服務時，在開發過程中體驗到相當多的代幣不方便的環境。我們的流程目標為:
+FST Network 在提供模組化智能合約與代幣化服務時，在開發過程中體驗到相當多的代幣不方便的環境。我們的流程目標為:
 
 ```
 (EA) --[transfer and call]-> (CA 1)
@@ -1059,13 +1059,13 @@ function increaseNonce() public returns (bool) {
 <!--Test cases for an implementation are mandatory for EIPs that are affecting consensus changes. Other EIPs can choose to include links to test cases if applicable.-->
 
 經過來自鏈外的交易測試腳本，以及鏈上的測試智能合約測試  
-原始碼於: https://github.com/funderstoken/Service-Friendly-Token-Standard/blob/develop/ServiceFriendlyToken.sol
+原始碼於: https://github.com/fstnetwork/Service-Friendly-Token-Standard/blob/develop/ServiceFriendlyToken.sol
 
 ## Implementation
 
 <!--The implementations must be completed before any EIP is given status "Final", but it need not be completed before the EIP is accepted. While there is merit to the approach of reaching consensus on the specification and rationale before writing code, the principle of "rough consensus and running code" is still useful when it comes to resolving many discussions of API details.-->
 
-FundersToken (https://fstk.io) 所發行之 Funder Smart Token 為一種 Service-Friendly Token (服務友善型代幣)，也與多個 FundersToken 去中心平台的智能合約模組連接，形成強壯可靠的智能合約服務。
+FST Network (https://fst.network) 所發行之 Funder Smart Token 為一種 Service-Friendly Token (服務友善型代幣)，也與多個 FST Network 去中心平台的智能合約模組連接，形成強壯可靠的智能合約服務。
 
 於 mainnet 的位址在: https://etherscan.io/address/0x51c028bc9503874d74965638a4632a266d31f61f#code
 
